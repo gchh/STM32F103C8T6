@@ -20,7 +20,7 @@ int main(void)
     while(1)
     {	   
         LED1Toggle();
-        delay(1000);
+        delay(500);
     }		
 }
 
