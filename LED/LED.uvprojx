@@ -184,7 +184,6 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
-            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -338,7 +337,7 @@
               <MiscControls></MiscControls>
               <Define>USE_STDPERIPH_DRIVER,STM32F10X_MD</Define>
               <Undefine></Undefine>
-              <IncludePath>.\User;.\Device\Core;.\Device\Include;.\Device\StdPeriph_Driver\inc</IncludePath>
+              <IncludePath>.\User;..\Device\Core;..\Device\Include;..\Device\StdPeriph_Driver\inc</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -405,12 +404,12 @@
             <File>
               <FileName>stm32f10x_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Device\StdPeriph_Driver\src\stm32f10x_gpio.c</FilePath>
+              <FilePath>..\Device\StdPeriph_Driver\src\stm32f10x_gpio.c</FilePath>
             </File>
             <File>
               <FileName>stm32f10x_rcc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Device\StdPeriph_Driver\src\stm32f10x_rcc.c</FilePath>
+              <FilePath>..\Device\StdPeriph_Driver\src\stm32f10x_rcc.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -420,12 +419,12 @@
             <File>
               <FileName>system_stm32f10x.c</FileName>
               <FileType>1</FileType>
-              <FilePath>.\Device\Source\system_stm32f10x.c</FilePath>
+              <FilePath>..\Device\Source\system_stm32f10x.c</FilePath>
             </File>
             <File>
               <FileName>startup_stm32f10x_md.s</FileName>
               <FileType>2</FileType>
-              <FilePath>.\Device\Source\ARM\startup_stm32f10x_md.s</FilePath>
+              <FilePath>..\Device\Source\ARM\startup_stm32f10x_md.s</FilePath>
             </File>
           </Files>
         </Group>
