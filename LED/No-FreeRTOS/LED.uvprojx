@@ -396,6 +396,11 @@
               <FileType>1</FileType>
               <FilePath>..\User\stm32f10x_it.c</FilePath>
             </File>
+            <File>
+              <FileName>mco.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\mco.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>
