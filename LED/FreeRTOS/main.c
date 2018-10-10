@@ -39,6 +39,6 @@ void led_Serve(void* pvParam)
     while(1)
     {
         LED1Toggle();
-        vTaskDelay(1000);
+        vTaskDelay(500);
     }
 }

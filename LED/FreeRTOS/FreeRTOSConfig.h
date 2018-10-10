@@ -39,11 +39,14 @@
  *
  * See http://www.freertos.org/a00110.html.
  *----------------------------------------------------------*/
+#include <stdint.h>
+extern uint32_t SystemCoreClock; //SystemCoreClock在system_stm32f10x.c文件中选择
+
 
 #define configUSE_PREEMPTION		1
 #define configUSE_IDLE_HOOK			0
 #define configUSE_TICK_HOOK			0
-#define configCPU_CLOCK_HZ			( ( unsigned long ) 72000000 )	
+#define configCPU_CLOCK_HZ			( SystemCoreClock )  //( ( unsigned long ) 72000000 )	
 #define configTICK_RATE_HZ			( ( TickType_t ) 1000 )
 #define configMAX_PRIORITIES		( 5 )
 #define configMINIMAL_STACK_SIZE	( ( unsigned short ) 128 )
