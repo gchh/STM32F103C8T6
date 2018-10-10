@@ -1,17 +1,23 @@
 #include "stm32f1xx_hal.h"
 #include "led.h"
 #include "mco.h"
+#include "FreeRTOS.h"
+#include "task.h"
 
 /* Private typedef -----------------------------------------------------------*/
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-//static GPIO_InitTypeDef  GPIO_InitStruct;
+
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
+void led_Serve(void* pvParam);
 
 /* Private functions ---------------------------------------------------------*/
+#define LED_STACK_SIZE  10
+TaskHandle_t LedTaskHandle = NULL;
+
 
 /**
   * @brief  Main program
@@ -42,15 +48,29 @@ int main(void)
     
     MCO_config(RCC_MCO1SOURCE_PLLCLK, RCC_MCODIV_1);
     
-    SystemCoreClock=HAL_RCC_GetSysClockFreq();
-    /* -3- Toggle IO in an infinite loop */
-    while (1)
+    xTaskCreate( led_Serve, 
+                 (char const*)"led", 
+                 LED_STACK_SIZE, 
+                 NULL,
+                 1, 
+                 &LedTaskHandle);  
+                 
+	//Æô¶¯µ÷¶ÈÆ÷
+	vTaskStartScheduler();  
+                 
+    while(1){}
+}
+
+
+void led_Serve(void* pvParam)
+{
+    while(1)
     {
         LED1Toggle();
-        /* Insert delay 100 ms */
-        HAL_Delay(1000);
+        vTaskDelay(500);
     }
 }
+
 
 /**
   * @brief  System Clock Configuration

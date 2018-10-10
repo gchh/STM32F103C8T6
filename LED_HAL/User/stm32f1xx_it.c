@@ -126,9 +126,11 @@ void UsageFault_Handler(void)
   * @param  None
   * @retval None
   */
+#ifndef RTE_CMSIS_RTOS_RTX
 void SVC_Handler(void)
 {
 }
+#endif
 
 /**
   * @brief  This function handles Debug Monitor exception.
@@ -144,19 +146,22 @@ void DebugMon_Handler(void)
   * @param  None
   * @retval None
   */
+#ifndef RTE_CMSIS_RTOS_RTX
 void PendSV_Handler(void)
 {
 }
+#endif
 
 /**
   * @brief  This function handles SysTick Handler.
   * @param  None
   * @retval None
   */
+#ifndef RTE_CMSIS_RTOS_RTX
 void SysTick_Handler(void)
 {
-  HAL_IncTick();
 }
+#endif
 
 /******************************************************************************/
 /*                 STM32F1xx Peripherals Interrupt Handlers                   */
