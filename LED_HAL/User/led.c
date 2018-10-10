@@ -9,13 +9,18 @@
 void LED_GPIO_Config(void)
 {	
     //定义一个GPIO_InitTypeDef 类型的结构体
-    GPIO_InitTypeDef  GPIO_InitStructure;	
-    RCC_APB2PeriphClockCmd(LED1_GPIO_RCC,ENABLE);//使能GPIO的外设时钟
-    /*D1*/
-    GPIO_InitStructure.GPIO_Pin =LED1_GPIO_PIN;//选择要用的GPIO引脚
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_Out_PP; //设置引脚模式为推免输出模式						 
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//设置引脚速度为50MHZ         
-    GPIO_Init(LED1_GPIO_PORT, &GPIO_InitStructure);//调用库函数，初始化GPIO
+    GPIO_InitTypeDef  GPIO_InitStruct;
+    
+    /* -1- Enable GPIO Clock (to be able to program the configuration registers) */
+    LED1_GPIO_CLK_ENABLE();
+
+    /* -2- Configure IO in output push-pull mode to drive external LEDs */
+    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
+    GPIO_InitStruct.Pull  = GPIO_PULLUP;
+    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
+
+    GPIO_InitStruct.Pin = LED1_PIN;
+    HAL_GPIO_Init(LED1_GPIO_PORT, &GPIO_InitStruct);
 }
 
  /**
@@ -26,6 +31,6 @@ void LED_GPIO_Config(void)
   */
 void LED1Toggle(void)
 {
-    LED1_GPIO_PORT->ODR^=LED1_GPIO_PIN;
+    HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
 }
 

@@ -11,5 +11,7 @@
 #define LED1_GPIO_CLK_DISABLE()          __HAL_RCC_GPIOC_CLK_DISABLE()  
 
 
-
+void LED_GPIO_Config(void);
+void LED1Toggle(void);
+    
 #endif

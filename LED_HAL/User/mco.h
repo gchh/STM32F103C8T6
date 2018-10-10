@@ -3,7 +3,7 @@
 #define __MCO_H
 
 
-#include "stm32f10x.h"
+#include "stm32f1xx_hal.h"
 
 
 #define MCO_GPIO_RCC      RCC_APB2Periph_GPIOA
@@ -11,8 +11,7 @@
 #define MCO_GPIO_PIN      GPIO_Pin_8
 
 
-void MCO_GPIO_config(void);
-void MCO_SelectClockSource(uint8_t RCC_MCO);
+void MCO_config(uint32_t RCC_MCOSource, uint32_t RCC_MCODiv);
 
 
 #endif
