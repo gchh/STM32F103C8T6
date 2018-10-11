@@ -39,8 +39,9 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f1xx_it.h"
+#ifdef CMSIS_RTOS
 #include "cmsis_os.h"
-
+#endif
 /** @addtogroup STM32F1xx_HAL_Examples
   * @{
   */
@@ -161,8 +162,9 @@ void PendSV_Handler(void)
 #ifndef RTE_CMSIS_RTOS_RTX
 void SysTick_Handler(void)
 {
+    HAL_IncTick();
 }
-#else
+#elif defined  CMSIS_RTOS
 void SysTick_Handler(void)
 {
     osSystickHandler();

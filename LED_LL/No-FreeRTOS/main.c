@@ -1,4 +1,11 @@
-#include "stm32f1xx_hal.h"
+#include "stm32f1xx_ll_bus.h"
+#include "stm32f1xx_ll_rcc.h"
+#include "stm32f1xx_ll_system.h"
+#include "stm32f1xx_ll_utils.h"
+#include "stm32f1xx_ll_gpio.h"
+#if defined(USE_FULL_ASSERT)
+#include "stm32_assert.h"
+#endif /* USE_FULL_ASSERT */
 #include "led.h"
 #include "mco.h"
 
@@ -6,10 +13,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-//static GPIO_InitTypeDef  GPIO_InitStruct;
-
-/* Private function prototypes -----------------------------------------------*/
-void SystemClock_Config(void);
+void     SystemClock_Config(void);
 
 /* Private functions ---------------------------------------------------------*/
 
@@ -20,88 +24,74 @@ void SystemClock_Config(void);
   */
 int main(void)
 {
-    /* This sample code shows how to use GPIO HAL API to toggle LED2 IO
-    in an infinite loop. */
-
-    /* STM32F103xB HAL library initialization:
-       - Configure the Flash prefetch
-       - Systick timer is configured by default as source of time base, but user 
-         can eventually implement his proper time base source (a general purpose 
-         timer for example or other time source), keeping in mind that Time base 
-         duration should be kept 1ms since PPP_TIMEOUT_VALUEs are defined and 
-         handled in milliseconds basis.
-       - Set NVIC Group Priority to 4
-       - Low Level Initialization
-    */
-    HAL_Init();
-
-    /* Configure the system clock to 64 MHz */
+    /* Configure the system clock to 72 MHz */
     SystemClock_Config();
-  
+    
+    /* -2- Configure IO in output push-pull mode to drive external LED */
     LED_GPIO_Config();
+
+    MCO_config(LL_RCC_MCO1SOURCE_HSE);
     
-    MCO_config(RCC_MCO1SOURCE_PLLCLK, RCC_MCODIV_1);
-    
-    SystemCoreClock=HAL_RCC_GetSysClockFreq();
-    /* -3- Toggle IO in an infinite loop */
+    /* Toggle IO in an infinite loop */
     while (1)
     {
         LED1Toggle();
-        /* Insert delay 100 ms */
-        HAL_Delay(1000);
+    
+        /* Insert delay 250 ms */
+        LL_mDelay(1000);
     }
 }
 
 /**
   * @brief  System Clock Configuration
-  *         The system Clock is configured as follow : 
-  *            System Clock source            = PLL (HSI)
-  *            SYSCLK(Hz)                     = 64000000
-  *            HCLK(Hz)                       = 64000000
+  *         The system Clock is configured as follow :
+  *            System Clock source            = PLL (HSE)
+  *            SYSCLK(Hz)                     = 72000000
+  *            HCLK(Hz)                       = 72000000
   *            AHB Prescaler                  = 1
   *            APB1 Prescaler                 = 2
   *            APB2 Prescaler                 = 1
-  *            PLLMUL                         = 16
+  *            HSE Frequency(Hz)              = 8000000
+  *            PLLMUL                         = 9
   *            Flash Latency(WS)              = 2
   * @param  None
   * @retval None
   */
 void SystemClock_Config(void)
 {
-  RCC_ClkInitTypeDef clkinitstruct = {0};
-  RCC_OscInitTypeDef oscinitstruct = {0};
-  
-  /* Configure PLL ------------------------------------------------------*/
-  /* PLL configuration: PLLCLK = (HSI / 2) * PLLMUL = (8 / 2) * 16 = 64 MHz */
-  /* PREDIV1 configuration: PREDIV1CLK = PLLCLK / HSEPredivValue = 64 / 1 = 64 MHz */
-  /* Enable HSI and activate PLL with HSi_DIV2 as source */
-  oscinitstruct.OscillatorType  = RCC_OSCILLATORTYPE_HSI;
-  oscinitstruct.HSEState        = RCC_HSE_OFF;
-  oscinitstruct.LSEState        = RCC_LSE_OFF;
-  oscinitstruct.HSIState        = RCC_HSI_ON;
-  oscinitstruct.HSICalibrationValue = RCC_HSICALIBRATION_DEFAULT;
-  oscinitstruct.HSEPredivValue    = RCC_HSE_PREDIV_DIV1;
-  oscinitstruct.PLL.PLLState    = RCC_PLL_ON;
-  oscinitstruct.PLL.PLLSource   = RCC_PLLSOURCE_HSI_DIV2;
-  oscinitstruct.PLL.PLLMUL      = RCC_PLL_MUL16;
-  if (HAL_RCC_OscConfig(&oscinitstruct)!= HAL_OK)
-  {
-    /* Initialization Error */
-    while(1); 
-  }
+    /* Set FLASH latency */
+    LL_FLASH_SetLatency(LL_FLASH_LATENCY_2);
 
-  /* Select PLL as system clock source and configure the HCLK, PCLK1 and PCLK2 
-     clocks dividers */
-  clkinitstruct.ClockType = (RCC_CLOCKTYPE_SYSCLK | RCC_CLOCKTYPE_HCLK | RCC_CLOCKTYPE_PCLK1 | RCC_CLOCKTYPE_PCLK2);
-  clkinitstruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
-  clkinitstruct.AHBCLKDivider = RCC_SYSCLK_DIV1;
-  clkinitstruct.APB2CLKDivider = RCC_HCLK_DIV1;
-  clkinitstruct.APB1CLKDivider = RCC_HCLK_DIV2;  
-  if (HAL_RCC_ClockConfig(&clkinitstruct, FLASH_LATENCY_2)!= HAL_OK)
-  {
-    /* Initialization Error */
-    while(1); 
-  }
+    /* Enable HSE oscillator */
+    LL_RCC_HSE_Enable();
+    while(LL_RCC_HSE_IsReady() != 1)
+    {
+    };
+
+    /* Main PLL configuration and activation */
+    LL_RCC_PLL_ConfigDomain_SYS(LL_RCC_PLLSOURCE_HSE_DIV_1, LL_RCC_PLL_MUL_9);
+
+    LL_RCC_PLL_Enable();
+    while(LL_RCC_PLL_IsReady() != 1)
+    {
+    };
+
+    /* Sysclk activation on the main PLL */
+    LL_RCC_SetAHBPrescaler(LL_RCC_SYSCLK_DIV_1);
+    LL_RCC_SetSysClkSource(LL_RCC_SYS_CLKSOURCE_PLL);
+    while(LL_RCC_GetSysClkSource() != LL_RCC_SYS_CLKSOURCE_STATUS_PLL)
+    {
+    };
+
+    /* Set APB1 & APB2 prescaler*/
+    LL_RCC_SetAPB1Prescaler(LL_RCC_APB1_DIV_2);
+    LL_RCC_SetAPB2Prescaler(LL_RCC_APB2_DIV_1);
+
+    /* Set systick to 1ms in using frequency set to 72MHz */
+    LL_Init1msTick(72000000);
+
+    /* Update CMSIS variable (which can be updated also through SystemCoreClockUpdate function) */
+    LL_SetSystemCoreClock(72000000);
 }
 
 #ifdef  USE_FULL_ASSERT
@@ -116,7 +106,7 @@ void SystemClock_Config(void)
 void assert_failed(uint8_t *file, uint32_t line)
 {
   /* User can add his own implementation to report the file name and line number,
-     ex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
+     ex: printf("Wrong parameters value: file %s on line %d", file, line) */
 
   /* Infinite loop */
   while (1)
@@ -124,3 +114,14 @@ void assert_failed(uint8_t *file, uint32_t line)
   }
 }
 #endif
+
+
+/**
+  * @}
+  */
+
+/**
+  * @}
+  */
+
+/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/

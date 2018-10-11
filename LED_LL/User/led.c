@@ -1,27 +1,29 @@
 #include "led.h"
 
- /**
-  * @file   LED_GPIO_Config
-  * @brief  LED灯引脚配置
-  * @param  无
-  * @retval 无
+
+/**
+  * @brief  This function configures GPIO
+  * @note   Peripheral configuration is minimal configuration from reset values.
+  *         Thus, some useless LL unitary functions calls below are provided as
+  *         commented examples - setting is default configuration from reset.
+  * @param  None
+  * @retval None
   */
 void LED_GPIO_Config(void)
-{	
-    //定义一个GPIO_InitTypeDef 类型的结构体
-    GPIO_InitTypeDef  GPIO_InitStruct;
-    
-    /* -1- Enable GPIO Clock (to be able to program the configuration registers) */
+{
+    /* Enable the LED2 Clock */
     LED1_GPIO_CLK_ENABLE();
 
-    /* -2- Configure IO in output push-pull mode to drive external LEDs */
-    GPIO_InitStruct.Mode  = GPIO_MODE_OUTPUT_PP;
-    GPIO_InitStruct.Pull  = GPIO_PULLUP;
-    GPIO_InitStruct.Speed = GPIO_SPEED_FREQ_HIGH;
-
-    GPIO_InitStruct.Pin = LED1_PIN;
-    HAL_GPIO_Init(LED1_GPIO_PORT, &GPIO_InitStruct);
+    /* Configure IO in output push-pull mode to drive external LED2 */
+    LL_GPIO_SetPinMode(LED1_GPIO_PORT, LED1_PIN, LL_GPIO_MODE_OUTPUT);
+    /* Reset value is LL_GPIO_OUTPUT_PUSHPULL */
+    //LL_GPIO_SetPinOutputType(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_OUTPUT_PUSHPULL);
+    /* Reset value is LL_GPIO_SPEED_FREQ_LOW */
+    //LL_GPIO_SetPinSpeed(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_SPEED_FREQ_LOW);
+    /* Reset value is LL_GPIO_PULL_NO */
+    //LL_GPIO_SetPinPull(LED2_GPIO_PORT, LED2_PIN, LL_GPIO_PULL_NO);
 }
+
 
  /**
   * @file   LED1Toggle
@@ -31,6 +33,6 @@ void LED_GPIO_Config(void)
   */
 void LED1Toggle(void)
 {
-    HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
+    LL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
 }
 
