@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>..\Outputs\</OutputDirectory>
-          <OutputName>LED_HAL_FreeRTOS</OutputName>
+          <OutputName>LED_HAL_CMSIS_FreeRTOS</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -338,7 +338,7 @@
               <MiscControls></MiscControls>
               <Define>USE_HAL_DRIVER,STM32F103x6,RTE_CMSIS_RTOS_RTX</Define>
               <Undefine></Undefine>
-              <IncludePath>..\User;..\..\Drivers\CMSIS\Include;..\..\Drivers\CMSIS\Device\Include;..\..\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy;..\..\FreeRTOS\Source\include;..\..\FreeRTOS\Source\portable\RVDS\ARM_CM3;..\FreeRTOS</IncludePath>
+              <IncludePath>..\CMSIS_FreeRTOS;..\User;..\..\Drivers\CMSIS\Include;..\..\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\Drivers\CMSIS\Device\Include;..\..\FreeRTOS\Source\include;..\..\FreeRTOS\Source\portable\RVDS\ARM_CM3</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -383,14 +383,19 @@
           <GroupName>User</GroupName>
           <Files>
             <File>
+              <FileName>cmsis_os.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>.\cmsis_os.c</FilePath>
+            </File>
+            <File>
               <FileName>main.c</FileName>
               <FileType>1</FileType>
               <FilePath>.\main.c</FilePath>
             </File>
             <File>
-              <FileName>led.c</FileName>
+              <FileName>stm32f1xx_it.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\User\led.c</FilePath>
+              <FilePath>..\User\stm32f1xx_it.c</FilePath>
             </File>
             <File>
               <FileName>mco.c</FileName>
@@ -398,9 +403,9 @@
               <FilePath>..\User\mco.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f1xx_it.c</FileName>
+              <FileName>led.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\User\stm32f1xx_it.c</FilePath>
+              <FilePath>..\User\led.c</FilePath>
             </File>
           </Files>
         </Group>
@@ -468,9 +473,9 @@
               <FilePath>..\..\FreeRTOS\Source\portable\RVDS\ARM_CM3\port.c</FilePath>
             </File>
             <File>
-              <FileName>heap_2.c</FileName>
+              <FileName>heap_4.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\FreeRTOS\Source\portable\MemMang\heap_2.c</FilePath>
+              <FilePath>..\..\FreeRTOS\Source\portable\MemMang\heap_4.c</FilePath>
             </File>
           </Files>
         </Group>
