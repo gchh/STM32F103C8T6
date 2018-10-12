@@ -15,6 +15,7 @@
 /* Private variables ---------------------------------------------------------*/
 void     SystemClock_Config(void);
 
+LL_RCC_ClocksTypeDef RCC_CLOCKS;
 /* Private functions ---------------------------------------------------------*/
 
 /**
@@ -32,13 +33,15 @@ int main(void)
 
     MCO_config(LL_RCC_MCO1SOURCE_HSE);
     
+    LL_RCC_GetSystemClocksFreq(&RCC_CLOCKS);
+    
     /* Toggle IO in an infinite loop */
     while (1)
     {
         LED1Toggle();
     
         /* Insert delay 250 ms */
-        LL_mDelay(1000);
+        LL_mDelay(250);
     }
 }
 

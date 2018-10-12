@@ -184,6 +184,7 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
+            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -425,6 +426,11 @@
               <FileName>stm32f1xx_ll_utils.c</FileName>
               <FileType>1</FileType>
               <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_utils.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_ll_rcc.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_ll_rcc.c</FilePath>
             </File>
           </Files>
         </Group>
