@@ -54,6 +54,7 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
+extern PCD_HandleTypeDef hpcd;
 
 /* Private function prototypes -----------------------------------------------*/
 /* Private functions ---------------------------------------------------------*/
@@ -177,6 +178,27 @@ void SysTick_Handler(void)
 /*  available peripheral interrupt handler's name please refer to the startup */
 /*  file (startup_stm32f1xx.s).                                               */
 /******************************************************************************/
+
+/**
+  * @brief  This function handles USB Handler.
+  * @param  None
+  * @retval None
+  */
+void USB_LP_CAN1_RX0_IRQHandler(void)
+{
+  HAL_PCD_IRQHandler(&hpcd);
+}
+
+/**
+  * @brief  This function handles USB WakeUp interrupt request.
+  * @param  None
+  * @retval None
+  */
+void USBWakeUp_IRQHandler(void)
+{
+  __HAL_USB_WAKEUP_EXTI_CLEAR_FLAG();
+}
+
 
 /**
   * @brief  This function handles PPP interrupt request.

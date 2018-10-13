@@ -140,7 +140,14 @@
   * @brief This is the HAL system configuration section
   */     
 #define  VDD_VALUE                    3300U /*!< Value of VDD in mv */
-#define  TICK_INT_PRIORITY            0x0FU /*!< tick interrupt priority */
+/*
+    //Enable USB Wake-up interrupt
+    HAL_NVIC_SetPriority(USBWakeUp_IRQn, 0, 0);
+    //Set USB Interrupt priority
+    HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 5, 0);
+    TICK_INT_PRIORITY的优先级不能低于USB_LP_CAN1_RX0_IRQn，即其值要小于5，程序才正确执行。
+*/
+#define  TICK_INT_PRIORITY            0x00U//0x0FU /*!< tick interrupt priority */
 #define  USE_RTOS                     0U
 #define  PREFETCH_ENABLE              1U
 

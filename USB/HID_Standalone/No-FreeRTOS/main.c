@@ -2,7 +2,6 @@
 #include "led.h"
 #include "mco.h"
 #include "usbd_core.h"
-#include "stm32f1xx_hal_pcd.h"
 #include "usbd_desc.h"
 #include "usbd_hid.h"
 
@@ -21,7 +20,15 @@ static void Error_Handler(void);
 static void GetPointerData(uint8_t *pbuf);
 
 /* Private functions ---------------------------------------------------------*/
-
+/*
+    //Enable USB Wake-up interrupt
+    HAL_NVIC_SetPriority(USBWakeUp_IRQn, 0, 0);
+    //Set USB Interrupt priority
+    HAL_NVIC_SetPriority(USB_LP_CAN1_RX0_IRQn, 5, 0);
+    TICK_INT_PRIORITY的优先级不能低于USB_LP_CAN1_RX0_IRQn，即其值要小于5，程序才正确执行。
+*/
+//#define  TICK_INT_PRIORITY            0x00U//0x0FU /*!< tick interrupt priority */
+//要注意上面的中断优先级问题！
 /**
   * @brief  Main program
   * @param  None
@@ -65,6 +72,7 @@ int main(void)
     /* -3- Toggle IO in an infinite loop */
     while (1)
     {
+        //HAL_Delay(100);
         LED1Toggle();
         /* Insert delay 100 ms */
         HAL_Delay(100);
@@ -156,10 +164,12 @@ static void GetPointerData(uint8_t *pbuf)
   if(cnt++ > 0)
   {
     x = CURSOR_STEP;
+    y = CURSOR_STEP;
   }
   else
   {
     x = -CURSOR_STEP;
+    y = -CURSOR_STEP;
   }
   
   pbuf[0] = 0;
