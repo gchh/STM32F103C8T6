@@ -170,12 +170,12 @@ void SysTick_Handler(void)
 {
     osSystickHandler();
 }
-//#else
-//void xPortSysTickHandler( void );
-//void SysTick_Handler(void)
-//{
-//    xPortSysTickHandler();
-//}
+#else
+void xPortSysTickHandler( void );
+void SysTick_Handler(void)
+{
+    xPortSysTickHandler();
+}
 #endif
 
 /******************************************************************************/
