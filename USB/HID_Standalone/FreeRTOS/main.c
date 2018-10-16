@@ -114,9 +114,9 @@ void Usb_HID_Serve(void* pvParam)
     while(1)
     {
         /* Insert delay 100 ms */
-        vTaskDelay(100);//HAL_Delay(100);
-        GetPointerData(HID_Buffer);
-        USBD_HID_SendReport(&USBD_Device, HID_Buffer, 4);
+        vTaskDelay(1);//HAL_Delay(100);
+        //GetPointerData(HID_Buffer);
+        //USBD_HID_SendReport(&USBD_Device, HID_Buffer, 4);
     }
 }
 
