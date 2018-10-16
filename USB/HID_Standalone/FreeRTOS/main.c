@@ -18,7 +18,7 @@ uint8_t HID_Buffer[4];
 #define LED_STACK_SIZE  10
 TaskHandle_t LedTaskHandle = NULL;
 
-#define USB_HID_STACK_SIZE  500
+#define USB_HID_STACK_SIZE  200
 TaskHandle_t UsbHidTaskHandle = NULL;
 
 
@@ -90,7 +90,7 @@ int main(void)
                  (char const*)"USB HID", 
                  USB_HID_STACK_SIZE, 
                  NULL,
-                 5, 
+                 0, 
                  &UsbHidTaskHandle);  
                  
 	//Æô¶¯µ÷¶ÈÆ÷

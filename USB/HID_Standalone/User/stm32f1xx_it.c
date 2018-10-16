@@ -174,6 +174,7 @@ void SysTick_Handler(void)
 void xPortSysTickHandler( void );
 void SysTick_Handler(void)
 {
+    HAL_IncTick();
     xPortSysTickHandler();
 }
 #endif
