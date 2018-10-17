@@ -18,7 +18,7 @@ uint8_t HID_Buffer[4];
 #define LED_STACK_SIZE  10
 TaskHandle_t LedTaskHandle = NULL;
 
-#define USB_HID_STACK_SIZE  200
+#define USB_HID_STACK_SIZE  300
 TaskHandle_t UsbHidTaskHandle = NULL;
 
 
@@ -79,18 +79,18 @@ int main(void)
     /* Start Device Process */
     USBD_Start(&USBD_Device);
 
-    xTaskCreate( led_Serve, 
-                 (char const*)"led", 
-                 LED_STACK_SIZE, 
-                 NULL,
-                 0, 
-                 &LedTaskHandle);  
+//    xTaskCreate( led_Serve, 
+//                 (char const*)"led", 
+//                 LED_STACK_SIZE, 
+//                 NULL,
+//                 0, 
+//                 &LedTaskHandle);  
 
     xTaskCreate( Usb_HID_Serve, 
                  (char const*)"USB HID", 
                  USB_HID_STACK_SIZE, 
                  NULL,
-                 0, 
+                 1, 
                  &UsbHidTaskHandle);  
                  
 	//Æô¶¯µ÷¶ÈÆ÷
@@ -113,10 +113,11 @@ void Usb_HID_Serve(void* pvParam)
 {
     while(1)
     {
+        LED1Toggle();
         /* Insert delay 100 ms */
-        vTaskDelay(1);//HAL_Delay(100);
-        //GetPointerData(HID_Buffer);
-        //USBD_HID_SendReport(&USBD_Device, HID_Buffer, 4);
+        vTaskDelay(100);//HAL_Delay(100);
+        GetPointerData(HID_Buffer);
+        USBD_HID_SendReport(&USBD_Device, HID_Buffer, 4);
     }
 }
 
