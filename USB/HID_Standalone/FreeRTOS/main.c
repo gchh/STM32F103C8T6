@@ -79,18 +79,18 @@ int main(void)
     /* Start Device Process */
     USBD_Start(&USBD_Device);
 
-//    xTaskCreate( led_Serve, 
-//                 (char const*)"led", 
-//                 LED_STACK_SIZE, 
-//                 NULL,
-//                 0, 
-//                 &LedTaskHandle);  
+    xTaskCreate( led_Serve, 
+                 (char const*)"led", 
+                 LED_STACK_SIZE, 
+                 NULL,
+                 0, 
+                 &LedTaskHandle);  
 
     xTaskCreate( Usb_HID_Serve, 
                  (char const*)"USB HID", 
                  USB_HID_STACK_SIZE, 
                  NULL,
-                 1, 
+                 0, 
                  &UsbHidTaskHandle);  
                  
 	//Æô¶¯µ÷¶ÈÆ÷
@@ -113,7 +113,6 @@ void Usb_HID_Serve(void* pvParam)
 {
     while(1)
     {
-        LED1Toggle();
         /* Insert delay 100 ms */
         vTaskDelay(100);//HAL_Delay(100);
         GetPointerData(HID_Buffer);
