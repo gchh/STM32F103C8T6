@@ -90,7 +90,7 @@ int main(void)
                  (char const*)"USB HID", 
                  USB_HID_STACK_SIZE, 
                  NULL,
-                 0, 
+                 5, 
                  &UsbHidTaskHandle);  
                  
 	//Æô¶¯µ÷¶ÈÆ÷
