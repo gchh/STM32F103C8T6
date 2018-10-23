@@ -18,7 +18,7 @@ uint8_t HID_Buffer[4];
 #define LED_STACK_SIZE  10
 TaskHandle_t LedTaskHandle = NULL;
 
-#define USB_HID_STACK_SIZE  300
+#define USB_HID_STACK_SIZE  10
 TaskHandle_t UsbHidTaskHandle = NULL;
 
 
@@ -63,7 +63,7 @@ int main(void)
 
     /* Configure the system clock to 64 MHz */
     SystemClock_Config();
-  
+    
     LED_GPIO_Config();
     
     MCO_config(RCC_MCO1SOURCE_PLLCLK, RCC_MCODIV_1);
@@ -78,19 +78,20 @@ int main(void)
 
     /* Start Device Process */
     USBD_Start(&USBD_Device);
+    
 
-    xTaskCreate( led_Serve, 
-                 (char const*)"led", 
-                 LED_STACK_SIZE, 
-                 NULL,
-                 0, 
-                 &LedTaskHandle);  
+//    xTaskCreate( led_Serve, 
+//                 (char const*)"led", 
+//                 LED_STACK_SIZE, 
+//                 NULL,
+//                 0, 
+//                 &LedTaskHandle);  
 
     xTaskCreate( Usb_HID_Serve, 
                  (char const*)"USB HID", 
                  USB_HID_STACK_SIZE, 
                  NULL,
-                 5, 
+                 0, 
                  &UsbHidTaskHandle);  
                  
 	//Æô¶¯µ÷¶ÈÆ÷
@@ -113,6 +114,7 @@ void Usb_HID_Serve(void* pvParam)
 {
     while(1)
     {
+        LED1Toggle();
         /* Insert delay 100 ms */
         vTaskDelay(100);//HAL_Delay(100);
         GetPointerData(HID_Buffer);
