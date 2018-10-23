@@ -38,6 +38,11 @@ void Usb_HID_Serve(void* pvParam);
     TICK_INT_PRIORITY的优先级不能低于USB_LP_CAN1_RX0_IRQn，即其值要小于5，程序才正确执行。
 */
 //#define  TICK_INT_PRIORITY            0x00U//0x0FU /*!< tick interrupt priority */
+
+/* Make PendSV and SysTick the lowest priority interrupts. */
+//	portNVIC_SYSPRI2_REG |= portNVIC_PENDSV_PRI;
+//	portNVIC_SYSPRI2_REG |= portNVIC_SYSTICK_PRI;
+
 //要注意上面的中断优先级问题！
 /**
   * @brief  Main program
