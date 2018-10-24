@@ -18,7 +18,7 @@ uint8_t HID_Buffer[4];
 #define LED_STACK_SIZE  10
 TaskHandle_t LedTaskHandle = NULL;
 
-#define USB_HID_STACK_SIZE  10
+#define USB_HID_STACK_SIZE  20
 TaskHandle_t UsbHidTaskHandle = NULL;
 
 
@@ -39,9 +39,12 @@ void Usb_HID_Serve(void* pvParam);
 */
 //#define  TICK_INT_PRIORITY            0x00U//0x0FU /*!< tick interrupt priority */
 
+//FreeRTOS中的port.c文件中的函数xPortStartScheduler()中的下面的语句将PENDSV和SYSTICK的中断优先级设成15。
 /* Make PendSV and SysTick the lowest priority interrupts. */
 //	portNVIC_SYSPRI2_REG |= portNVIC_PENDSV_PRI;
 //	portNVIC_SYSPRI2_REG |= portNVIC_SYSTICK_PRI;
+//如果屏蔽portNVIC_SYSPRI2_REG |= portNVIC_PENDSV_PRI; 程序运行一会儿，会发生IMPRECISERR错误，导致FORCED(HARD FAULT)，SYSTICK中断挂起。
+//如果不屏蔽portNVIC_SYSPRI2_REG |= portNVIC_SYSTICK_PRI; 程序运行有时正常识别HID设备；有时不能识别HID设备，SYSTICK中断挂起。
 
 //要注意上面的中断优先级问题！
 /**
@@ -83,7 +86,9 @@ int main(void)
 
     /* Start Device Process */
     USBD_Start(&USBD_Device);
-    
+
+HAL_NVIC_SetPriority(BusFault_IRQn, 0 ,0U);
+HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
 
 //    xTaskCreate( led_Serve, 
 //                 (char const*)"led", 

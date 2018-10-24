@@ -174,7 +174,7 @@ void SysTick_Handler(void)
 extern void xPortSysTickHandler( void );
 void SysTick_Handler(void)
 {
-    HAL_IncTick();
+    HAL_IncTick();//这条语句屏蔽掉，会发生PendSV中断挂起，导致程序运行不正常，无法正确识别USB HID
     xPortSysTickHandler();
 }
 #endif
