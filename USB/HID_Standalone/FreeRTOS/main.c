@@ -87,9 +87,6 @@ int main(void)
     /* Start Device Process */
     USBD_Start(&USBD_Device);
 
-HAL_NVIC_SetPriority(BusFault_IRQn, 0 ,0U);
-HAL_NVIC_EnableIRQ(USB_LP_CAN1_RX0_IRQn);
-
 //    xTaskCreate( led_Serve, 
 //                 (char const*)"led", 
 //                 LED_STACK_SIZE, 
