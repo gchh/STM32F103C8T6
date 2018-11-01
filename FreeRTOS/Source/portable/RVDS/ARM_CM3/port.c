@@ -318,7 +318,7 @@ BaseType_t xPortStartScheduler( void )
 
 	/* Make PendSV and SysTick the lowest priority interrupts. */
 	portNVIC_SYSPRI2_REG |= portNVIC_PENDSV_PRI;
-#ifndef USE_HAL_DRIVER
+#ifndef USE_USB_Device_Library
 	portNVIC_SYSPRI2_REG |= portNVIC_SYSTICK_PRI;
 #endif
 	/* Start the timer that generates the tick ISR.  Interrupts are disabled

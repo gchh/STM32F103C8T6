@@ -184,6 +184,7 @@
             <hadXRAM>0</hadXRAM>
             <uocXRam>0</uocXRam>
             <RvdsVP>0</RvdsVP>
+            <RvdsMve>0</RvdsMve>
             <hadIRAM2>0</hadIRAM2>
             <hadIROM2>0</hadIROM2>
             <StupSel>8</StupSel>
@@ -335,7 +336,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_HAL_DRIVER,STM32F103x6,RTE_CMSIS_RTOS_RTX</Define>
+              <Define>USE_HAL_DRIVER,STM32F103x6,RTE_CMSIS_RTOS_RTX,USE_USB_Device_Library</Define>
               <Undefine></Undefine>
               <IncludePath>..\FreeRTOS;..\User;..\..\..\Drivers\CMSIS\Include;..\..\..\Drivers\CMSIS\Device\Include;..\..\..\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\..\Drivers\STM32_USB_Device_Library\Class\HID\Inc;..\..\..\Drivers\STM32_USB_Device_Library\Core\Inc;..\..\..\FreeRTOS\Source\include;..\..\..\FreeRTOS\Source\portable\RVDS\ARM_CM3</IncludePath>
             </VariousControls>
