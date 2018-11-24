@@ -23,7 +23,7 @@
 
 /* Includes ------------------------------------------------------------------*/
 #include "stm32f10x_it.h"
-
+#include "main.h"
 /** @addtogroup STM32F10x_StdPeriph_Template
   * @{
   */
@@ -141,6 +141,8 @@ __IO uint32_t uwTick;
 void SysTick_Handler(void)
 {
     uwTick++;
+    
+    if(timer_1ms<250)timer_1ms++;	
 }
 #endif
 /******************************************************************************/

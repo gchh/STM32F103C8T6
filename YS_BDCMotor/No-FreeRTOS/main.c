@@ -1,9 +1,8 @@
-#include "stm32f10x.h"
-#include "led.h"
-#include "BDCMotor.h"
+#include "main.h"
 
-//函数声明
-void delay(__IO uint32_t delay_cnt);
+uint8_t timer_1ms;
+
+void Key_process(void);
 
 /**
   * @file   main
@@ -26,32 +25,63 @@ int main(void)
     /*初始化LED端口*/
     LED_GPIO_Config();
     
+    KEY_GPIO_Init();
+    
     /* 高级控制定时器初始化并配置PWM输出功能 */
     BDCMOTOR_GPIO_Init();
     BDCMOTOR_TIMx_Init();
-    SetMotorSpeed(200);
-    //SetMotorDir(0);
-    
+
     while(1)
-    {	   
+    {	
+        KEY_Scan();
+        if(key_id_done==0)Key_process();
         LED1Toggle();
-        delay(500);
-        //SHUTDOWN_Toggle();
+        while(timer_1ms<TIME_BASE_MAIN);		//20ms
+	    timer_1ms=0;
     }		
 }
 
-
-extern __IO uint32_t uwTick;
-void delay(__IO uint32_t delay_cnt)//delay_cnt in 1ms
+void Key_process(void)
 {
-   uint32_t tickstart = uwTick;
-   uint32_t wait = delay_cnt;
-
-   /* Add a period to guarantee minimum wait */
-   if (wait < 0xFFFFFFFF)
-   {
-      wait++;
-   }
-  
-   while((uwTick-tickstart)<wait){}
+    switch(key_id)
+    {
+        case KEY_SPEED_UP:
+            key_id_done=1;
+            if(BDCMOTOR_state == BDCMOTOR_RUN)
+            {
+                if(PWM_Duty < BDCMOTOR_DUTY_FULL) PWM_Duty+=5;
+                if(PWM_Duty > BDCMOTOR_DUTY_FULL) PWM_Duty = BDCMOTOR_DUTY_FULL;
+                SetMotorSpeed(PWM_Duty);
+            }
+            break;
+        case KEY_SPEED_DOWN:
+            key_id_done=1;
+            if(BDCMOTOR_state == BDCMOTOR_RUN)
+            {
+                //if(PWM_Duty >= BDCMOTOR_DUTY_ZERO+5) PWM_Duty-=5;
+                //else PWM_Duty = BDCMOTOR_DUTY_ZERO;
+                if(PWM_Duty > BDCMOTOR_DUTY_ZERO) PWM_Duty-=5;
+                if(PWM_Duty < BDCMOTOR_DUTY_ZERO) PWM_Duty = BDCMOTOR_DUTY_ZERO;
+                SetMotorSpeed(PWM_Duty);        
+            }
+            break;    
+        case KEY_TURN_Clockwise:
+            key_id_done=1;
+            if(BDCMOTOR_state == BDCMOTOR_IDLE) SetMotorDir(0);
+            break;   
+        case KEY_TURN_Anticlockwise:
+            key_id_done=1;
+            if(BDCMOTOR_state == BDCMOTOR_IDLE) SetMotorDir(1);
+            break;   
+        case KEY_SHUTDOWN:
+            key_id_done=1;
+            if(BDCMOTOR_state == BDCMOTOR_RUN) 
+            {
+                PWM_Duty=0;
+                SetMotorSpeed(PWM_Duty);  
+                SetMotorStop();
+            }
+            break;           
+    }
 }
+

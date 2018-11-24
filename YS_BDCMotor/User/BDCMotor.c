@@ -1,5 +1,8 @@
 #include "BDCMotor.h"
 
+__IO int16_t PWM_Duty=BDCMOTOR_DUTY_ZERO; // 占空比：PWM_Duty/BDCMOTOR_TIM_PERIOD*100%
+uint8_t BDCMOTOR_state;
+
 void BDCMOTOR_GPIO_Init(void)
 {
     //定义一个GPIO_InitTypeDef 类型的结构体
@@ -61,7 +64,7 @@ void BDCMOTOR_TIMx_Init(void)
     /* 定时器比较输出配置 */
     /* PWM1 Mode configuration: Channel1 */
     TIM_OCInitStructure.TIM_OCMode = TIM_OCMode_PWM1;                  // 比较输出模式：PWM1模式
-    TIM_OCInitStructure.TIM_Pulse =  0;                                // 占空比
+    TIM_OCInitStructure.TIM_Pulse =  PWM_Duty;//0;                                // 占空比
     TIM_OCInitStructure.TIM_OCPolarity = TIM_OCPolarity_Low;           // 输出极性
     TIM_OCInitStructure.TIM_OCNPolarity = TIM_OCNPolarity_Low;         // 互补通道输出极性
     //TIM_OCInitStructure.OCFastMode = TIM_OCFAST_DISABLE;           // 快速模式
@@ -70,15 +73,19 @@ void BDCMOTOR_TIMx_Init(void)
     //TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     //TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
     TIM_OC1Init(BDCMOTOR_TIMx, &TIM_OCInitStructure); 
-    
+#if 0  
     //TIM_OC1PreloadConfig(BDCMOTOR_TIMx, TIM_OCPreload_Enable);
     //TIM_ARRPreloadConfig(BDCMOTOR_TIMx, ENABLE);
+    /* Enable the main output */
     TIM_CtrlPWMOutputs(BDCMOTOR_TIMx, ENABLE);
     
     /* TIM1 enable counter */
     TIM_Cmd(BDCMOTOR_TIMx, ENABLE);
     TIM_CCxCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCx_Enable);
     TIM_CCxNCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCxN_Disable);  // 停止输出
+#endif
+    BDCMOTOR_state = BDCMOTOR_IDLE;
+    SetMotorStop();
 }
 
 /**
@@ -110,8 +117,26 @@ void SetMotorDir(int16_t Dir)
         TIM_CCxCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCx_Disable);   // 停止输出  
         TIM_CCxNCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCxN_Enable);  
     }
+    /* Enable the main output */
+    TIM_CtrlPWMOutputs(BDCMOTOR_TIMx, ENABLE);
+    /* TIM1 enable counter */
+    TIM_Cmd(BDCMOTOR_TIMx, ENABLE);
+        
+    BDCMOTOR_state = BDCMOTOR_RUN;
 }
 
+void SetMotorStop(void)
+{
+    TIM_CCxCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCx_Disable);   // 停止输出  
+    TIM_CCxNCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCxN_Disable);  // 停止输出 
+    /* Disable the Main Output */
+    while((TIM1->CCER & (TIM_CCER_CC1E | TIM_CCER_CC1NE)) !=0);
+    TIM_CtrlPWMOutputs(BDCMOTOR_TIMx, DISABLE);
+    /* Disable the Peripheral */
+    TIM_Cmd(BDCMOTOR_TIMx, DISABLE);
+    
+    BDCMOTOR_state = BDCMOTOR_IDLE;
+}
 
 void SHUTDOWN_Toggle(void)
 {
