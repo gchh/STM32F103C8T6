@@ -30,6 +30,7 @@ int main(void)
     BDCMOTOR_GPIO_Init();
     BDCMOTOR_TIMx_Init();
     SetMotorSpeed(200);
+    //SetMotorDir(0);
     
     while(1)
     {	   

@@ -70,7 +70,11 @@ void BDCMOTOR_TIMx_Init(void)
     //TIM_OCInitStructure.TIM_OutputState = TIM_OutputState_Enable;
     //TIM_OCInitStructure.TIM_OutputNState = TIM_OutputNState_Enable;
     TIM_OC1Init(BDCMOTOR_TIMx, &TIM_OCInitStructure); 
-
+    
+    //TIM_OC1PreloadConfig(BDCMOTOR_TIMx, TIM_OCPreload_Enable);
+    //TIM_ARRPreloadConfig(BDCMOTOR_TIMx, ENABLE);
+    TIM_CtrlPWMOutputs(BDCMOTOR_TIMx, ENABLE);
+    
     /* TIM1 enable counter */
     TIM_Cmd(BDCMOTOR_TIMx, ENABLE);
     TIM_CCxCmd(BDCMOTOR_TIMx, TIM_Channel_1, TIM_CCx_Enable);
