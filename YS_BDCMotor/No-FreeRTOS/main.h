@@ -7,6 +7,8 @@
 #include "led.h"
 #include "BDCMotor.h"
 #include "key.h"
+#include "usart.h"
+
 
 extern uint8_t timer_1ms;
 

@@ -27,10 +27,19 @@ int main(void)
     
     KEY_GPIO_Init();
     
+    USARTx_GPIO_Init();
+    USARTx_Config();
+    
     /* 高级控制定时器初始化并配置PWM输出功能 */
     BDCMOTOR_GPIO_Init();
     BDCMOTOR_TIMx_Init();
 
+    printf("*************************************************************\r\n");
+    printf("*                                                           *\r\n");
+    printf("* Thank you for using The Development Board Of YuanDi ! ^_^ *\r\n");
+    printf("*                                                           *\r\n");
+    printf("*************************************************************\r\n");
+    
     while(1)
     {	
         KEY_Scan();
