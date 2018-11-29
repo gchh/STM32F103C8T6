@@ -34,3 +34,12 @@ void LED1Toggle(void)
     HAL_GPIO_TogglePin(LED1_GPIO_PORT, LED1_PIN);
 }
 
+void LED1ON(void)
+{
+    HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_PIN, GPIO_PIN_RESET);
+}
+
+void LED1OFF(void)
+{
+    HAL_GPIO_WritePin(LED1_GPIO_PORT, LED1_PIN, GPIO_PIN_SET);
+}

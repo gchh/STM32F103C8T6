@@ -53,11 +53,13 @@ int main(void)
     while (1)
     {
         printf("/*------ please input one char:(end with Enter)*/\r\n");
+        LED1ON();
         scanf("%c",&ch);
+        LED1OFF();  
         printf("Your input is a %c\r\n",ch);
-
-        LED1Toggle();
-        HAL_Delay(500);
+          
+        //LED1Toggle();
+        //HAL_Delay(500);
     }
 }
 

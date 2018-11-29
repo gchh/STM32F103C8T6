@@ -141,11 +141,12 @@ int fgetc(FILE * f)
 {
   static uint8_t i = 0;
   uint8_t ch = 0;
-  while(Buffer[i] == 0)
+  while(Buffer[i] == 0)//||Buffer[i] == '\r'||Buffer[i] == '\n')
   {
+    //if(Buffer[i] == '\r'||Buffer[i] == '\n') Buffer[i] = 0;
     i++;
     if(i==BUFFERSIZE)
-      i = 0;
+        i = 0;
   }
   ch = Buffer[i];
   Buffer[i] = 0;

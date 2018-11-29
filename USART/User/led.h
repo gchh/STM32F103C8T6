@@ -13,5 +13,7 @@
 
 void LED_GPIO_Config(void);
 void LED1Toggle(void);
-    
+void LED1ON(void);
+void LED1OFF(void);
+
 #endif
