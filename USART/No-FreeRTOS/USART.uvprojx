@@ -49,7 +49,7 @@
             <InvalidFlash>1</InvalidFlash>
           </TargetStatus>
           <OutputDirectory>..\Outputs\</OutputDirectory>
-          <OutputName>BDCMotor</OutputName>
+          <OutputName>USART</OutputName>
           <CreateExecutable>1</CreateExecutable>
           <CreateLib>0</CreateLib>
           <CreateHexFile>1</CreateHexFile>
@@ -336,9 +336,9 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,STM32F10X_MD</Define>
+              <Define>USE_HAL_DRIVER,STM32F103x6</Define>
               <Undefine></Undefine>
-              <IncludePath>..\User;..\..\Device\Core;..\..\Device\Include;..\..\Device\StdPeriph_Driver\inc;..\No-FreeRTOS</IncludePath>
+              <IncludePath>..\User;..\..\Drivers\STM32F1xx_HAL_Driver\Inc;..\..\Drivers\STM32F1xx_HAL_Driver\Inc\Legacy;..\..\Drivers\CMSIS\Include;..\..\Drivers\CMSIS\Device\Include</IncludePath>
             </VariousControls>
           </Cads>
           <Aads>
@@ -393,24 +393,14 @@
               <FilePath>..\User\led.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_it.c</FileName>
+              <FileName>mco.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\User\stm32f10x_it.c</FilePath>
+              <FilePath>..\User\mco.c</FilePath>
             </File>
             <File>
-              <FileName>BDCMotor.c</FileName>
+              <FileName>stm32f1xx_it.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\User\BDCMotor.c</FilePath>
-            </File>
-            <File>
-              <FileName>key.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\User\key.c</FilePath>
-            </File>
-            <File>
-              <FileName>delay.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\User\delay.c</FilePath>
+              <FilePath>..\User\stm32f1xx_it.c</FilePath>
             </File>
             <File>
               <FileName>usart.c</FileName>
@@ -420,42 +410,52 @@
           </Files>
         </Group>
         <Group>
-          <GroupName>Startup</GroupName>
+          <GroupName>CMSIS</GroupName>
           <Files>
             <File>
-              <FileName>system_stm32f10x.c</FileName>
-              <FileType>1</FileType>
-              <FilePath>..\..\Device\Source\system_stm32f10x.c</FilePath>
+              <FileName>startup_stm32f103x6.s</FileName>
+              <FileType>2</FileType>
+              <FilePath>..\..\Drivers\CMSIS\Device\Source\arm\startup_stm32f103x6.s</FilePath>
             </File>
             <File>
-              <FileName>startup_stm32f10x_md.s</FileName>
-              <FileType>2</FileType>
-              <FilePath>..\..\Device\Source\ARM\startup_stm32f10x_md.s</FilePath>
+              <FileName>system_stm32f1xx.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\CMSIS\Device\Source\system_stm32f1xx.c</FilePath>
             </File>
           </Files>
         </Group>
         <Group>
-          <GroupName>StdPeriph_Driver</GroupName>
+          <GroupName>STM32F1xx_HAL_Driver</GroupName>
           <Files>
             <File>
-              <FileName>stm32f10x_gpio.c</FileName>
+              <FileName>stm32f1xx_hal.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\Device\StdPeriph_Driver\src\stm32f10x_gpio.c</FilePath>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_rcc.c</FileName>
+              <FileName>stm32f1xx_hal_cortex.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\Device\StdPeriph_Driver\src\stm32f10x_rcc.c</FilePath>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_cortex.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_tim.c</FileName>
+              <FileName>stm32f1xx_hal_gpio.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\Device\StdPeriph_Driver\src\stm32f10x_tim.c</FilePath>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_gpio.c</FilePath>
             </File>
             <File>
-              <FileName>stm32f10x_usart.c</FileName>
+              <FileName>stm32f1xx_hal_rcc.c</FileName>
               <FileType>1</FileType>
-              <FilePath>..\..\Device\StdPeriph_Driver\src\stm32f10x_usart.c</FilePath>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_rcc.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_hal_uart.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_uart.c</FilePath>
+            </File>
+            <File>
+              <FileName>stm32f1xx_hal_dma.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\..\Drivers\STM32F1xx_HAL_Driver\Src\stm32f1xx_hal_dma.c</FilePath>
             </File>
           </Files>
         </Group>
