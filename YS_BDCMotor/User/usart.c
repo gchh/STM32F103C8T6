@@ -57,12 +57,25 @@ void USART_Config(void)
     NVIC_EnableIRQ(USART1_IRQn); 
 }
 
+uint8_t buffe[20],cnt;
 void USART1_IRQHandler(void)
 {
     u8 c;
+    if(USART_GetFlagStatus(USART, USART_FLAG_IDLE) != RESET)
+    {
+        USART_ClearFlag(USART, USART_FLAG_IDLE);
+    }
+    if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
+    {
+        USART_ClearFlag(USART, USART_FLAG_ORE);
+    }
     if(USART_GetITStatus(USART, USART_IT_RXNE) != RESET)
+    //if(USART_GetFlagStatus(USART, USART_FLAG_RXNE) != RESET)
     { 	
         c=USART_ReceiveData(USART);
+        buffe[cnt]=c;
+        if(buffe[cnt]==0x0A)cnt=0;
+        else cnt++;
         printf("%c",c);    //将接受到的数据直接返回打印
     }     
 }

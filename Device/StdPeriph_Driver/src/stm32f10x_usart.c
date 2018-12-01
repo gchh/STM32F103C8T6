@@ -953,6 +953,34 @@ void USART_ClearFlag(USART_TypeDef* USARTx, uint16_t USART_FLAG)
   *     @arg USART_IT_PE:   Parity Error interrupt
   * @retval The new state of USART_IT (SET or RESET).
   */
+/*
+ITStatus USART_GetITStatus(USART_TypeDef* USARTx, uint16_t USART_IT) //USART_IT=0X0525
+{
+   uint32_t bitpos=0x00, itmask=0x00, usartreg=0x00;
+   ITStatus bitstatus=RESET;
+   usartreg=((uint8_t)USART_IT)>>0X05; //usartreg=0x25>>0x05=0x01
+   itmask=USART_IT&IT_Mask; //IT_Mask=0x001f, itmask=5;
+   itmask=(uint32_t)0x01<<itmask; //itmask=0x0020
+   
+   itmask&=USARTx->CR1; //USARTx_CR1=0X202C, itmask=0X0020; USART_CR1中的RXNEIE位
+   
+   bitpos=USART_IT>>0X08; //bitpos=5;
+   bitpos=(uint32_t)0x01<<bitpos; //bitpos=0x0020;
+   
+   bitpos&=USARTx->SR; //USART_SR中的RXNE位
+   
+   if((itmask!=(uint16_t)RESET)&&(bitpos!=(uint16_t)RESET)) //RXNE中断发生
+   {
+      bitstatus=1;
+   }
+   else
+   {
+      bitstatus=0;
+   }
+   
+   return bitstatus;
+}
+*/
 ITStatus USART_GetITStatus(USART_TypeDef* USARTx, uint16_t USART_IT)
 {
   uint32_t bitpos = 0x00, itmask = 0x00, usartreg = 0x00;
