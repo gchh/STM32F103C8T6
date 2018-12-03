@@ -7,13 +7,14 @@
 /* Private define ------------------------------------------------------------*/
 /* Private macro -------------------------------------------------------------*/
 /* Private variables ---------------------------------------------------------*/
-//static GPIO_InitTypeDef  GPIO_InitStruct;
-
+uint8_t buff[100],ch;
+float ft;
+    
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
 
 /* Private functions ---------------------------------------------------------*/
-__IO char ch = 0;
+
 /**
   * @brief  Main program
   * @param  None
@@ -21,9 +22,6 @@ __IO char ch = 0;
   */
 int main(void)
 {
-    /* This sample code shows how to use GPIO HAL API to toggle LED2 IO
-    in an infinite loop. */
-
     /* STM32F103xB HAL library initialization:
        - Configure the Flash prefetch
        - Systick timer is configured by default as source of time base, but user 
@@ -47,17 +45,28 @@ int main(void)
     
     MX_USARTx_Init();
     
-    printf("/*------ hello -----*/\r\n");
+    printf("*************************************************************\r\n");
+    printf("*                           hello                           *\r\n");
+    printf("*  (*^_^*) (*^_^*) (*^_^*) (*^_^*) (*^_^*) (*^_^*) (*^_^*)  *\r\n");
+    printf("*                          welcome                          *\r\n");
+    printf("*************************************************************\r\n");
     
-    /* -3- Toggle IO in an infinite loop */
     while (1)
     {
-        printf("/*------ please input one char:(end with Enter)*/\r\n");
+        printf("/*------ please input :(end with Enter)*/\r\n");
         LED1ON();
-        scanf("%c",&ch);
+        //scanf("%c",&ch);  //输入单个字符
+        //scanf("%s",buff); //输入字符串
+        //scanf("%d",&ch); //输入一个整数（0-255）
+        scanf("%f",&ft); //输入一个浮点数
+        
         LED1OFF();  
-        printf("Your input is a %c\r\n",ch);
-          
+        printf("Your input is ");
+        //printf("%c\r\n", ch); //打印单个字符
+        //printf("%s\r\n",buff); //打印字符串
+        //printf("%d\r\n",ch); //打印一个整数
+        printf("%f\r\n",ft); //打印一个浮点数
+        
         //LED1Toggle();
         //HAL_Delay(500);
     }

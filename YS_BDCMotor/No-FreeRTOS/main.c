@@ -36,7 +36,7 @@ int main(void)
     
     printf("*************************************************************\r\n");
     printf("*                                                           *\r\n");
-    printf("* Thank you for using The Development Board Of YuanDi ! ^_^ *\r\n");
+    printf("* Thank you for using The Development Board Of BBDD ! ^_^ *\r\n");
     printf("*                                                           *\r\n");
     printf("*************************************************************\r\n");
 
@@ -45,7 +45,7 @@ int main(void)
         KEY_Scan();
         if(key_id_done==0)Key_process();
         LED1Toggle();
-        while(timer_1ms<TIME_BASE_MAIN);		//20ms
+        while(timer_1ms<TIME_BASE_MAIN){};    //将接受到的数据直接返回打印}		//20ms
 	    timer_1ms=0;
     }		
 }

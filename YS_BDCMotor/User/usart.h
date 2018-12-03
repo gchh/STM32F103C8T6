@@ -18,5 +18,4 @@
 void USART_GPIO_Init(void);
 void USART_Config(void);
 
-
 #endif

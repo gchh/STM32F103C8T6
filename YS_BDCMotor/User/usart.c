@@ -57,27 +57,35 @@ void USART_Config(void)
     NVIC_EnableIRQ(USART1_IRQn); 
 }
 
-uint8_t buffe[20],cnt;
+uint8_t buff[100],cnt;
 void USART1_IRQHandler(void)
 {
-    u8 c;
-    if(USART_GetFlagStatus(USART, USART_FLAG_IDLE) != RESET)
-    {
-        USART_ClearFlag(USART, USART_FLAG_IDLE);
-    }
+    //u8 c;
+    uint8_t i;
     if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
     {
+        //USART_ReceiveData(USART);
         USART_ClearFlag(USART, USART_FLAG_ORE);
     }
     if(USART_GetITStatus(USART, USART_IT_RXNE) != RESET)
     //if(USART_GetFlagStatus(USART, USART_FLAG_RXNE) != RESET)
-    { 	
-        c=USART_ReceiveData(USART);
-        buffe[cnt]=c;
-        if(buffe[cnt]==0x0A)cnt=0;
+    {
+        //USART_ClearITPendingBit(USART, USART_IT_RXNE);
+        
+        buff[cnt]=USART_ReceiveData(USART);
+        if(buff[cnt]==0x0A||cnt>=99)//接收完毕才打印，否则接收一个打印一个，会造成过载，丢失数据
+        {
+            for(i=0;i<=cnt;i++)
+            {
+                printf("%c",buff[i]);    //将接受到的数据直接返回打印
+            }
+            cnt=0;
+        }
         else cnt++;
-        printf("%c",c);    //将接受到的数据直接返回打印
-    }     
+        //c=USART_ReceiveData(USART);
+        USART_ClearFlag(USART, USART_FLAG_RXNE);
+        //printf("%c",c);    //将接受到的数据直接返回打印
+    }
 }
 
 /**
