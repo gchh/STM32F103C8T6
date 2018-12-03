@@ -104,26 +104,3 @@ int fputc(int ch, FILE *f)
     {}
     return ch;
 }
-
-/**
-  * 函数功能: 重定向c库函数getchar,scanf到DEBUG_USARTx
-  * 输入参数: 无
-  * 返 回 值: 无
-  * 说    明：重定向到Buffer,使用中断接收数据到Buffer,然后读取.防止
-  * 来不及数据接收导致丢失数据.
-  */
-//int fgetc(FILE * f)
-//{
-//  static uint8_t i = 0;
-//  uint8_t ch = 0;
-//  while(Buffer[i] == 0)
-//  {
-//    i++;
-//    if(i==BUFFERSIZE)
-//      i = 0;
-//  }
-//  ch = Buffer[i];
-//  Buffer[i] = 0;
-//  return ch;
-//}
-
