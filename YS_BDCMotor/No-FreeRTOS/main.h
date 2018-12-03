@@ -14,4 +14,6 @@ extern uint8_t timer_1ms;
 
 #define TIME_BASE_MAIN      20
 
+#define UART_CONTROL //使用串口控制电机运转
+
 #endif
