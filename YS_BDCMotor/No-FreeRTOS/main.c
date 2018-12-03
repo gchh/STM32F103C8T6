@@ -12,6 +12,8 @@ void Key_process(void);
   */
 int main(void)
 {
+    __IO char ch = 0;
+    
 	/*Configure the SysTick to have interrupt in 1ms time basis*/
 	//in the file system_stm3210x.c, configure the SystemCoreClock
         /* #define SYSCLK_FREQ_HSE    HSE_VALUE */
@@ -42,6 +44,10 @@ int main(void)
 
     while(1)
     {	
+        printf("/*------ please input one char:(end with Enter)*/\r\n");
+        scanf("%c",&ch); 
+        printf("Your input is a %c\r\n",ch);
+        
         KEY_Scan();
         if(key_id_done==0)Key_process();
         LED1Toggle();
