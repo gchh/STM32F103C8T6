@@ -67,10 +67,8 @@ void USART_Config(void)
 #ifdef USART_IT
 void USART1_IRQHandler(void)
 {
-    //if(USART_ReceiveData(USART) == '\r') USART_ClearFlag(USART, USART_FLAG_RXNE);//当要求输入Y时，如果输入超过2个非Y字符或数字时，在输入Y，会接收不到这个Y，收到的是'\r'，加上这句就可以。
     if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
     {
-        Buffer[0]=USART_ReceiveData(USART);
         USART_ClearFlag(USART, USART_FLAG_ORE);
     }
     if(USART_GetITStatus(USART, USART_IT_RXNE) != RESET)
@@ -78,12 +76,9 @@ void USART1_IRQHandler(void)
     {
         //USART_ClearITPendingBit(USART, USART_IT_RXNE);
 
-        if(USART_ReceiveData(USART) != '\r')
-        {
-            Buffer[0]=USART_ReceiveData(USART);
+        Buffer[0]=USART_ReceiveData(USART);
         
-            USART_ClearFlag(USART, USART_FLAG_RXNE);
-        }
+        USART_ClearFlag(USART, USART_FLAG_RXNE);
     }
 }
 #endif
@@ -117,8 +112,7 @@ int fgetc(FILE * f)
     uint8_t ch = 0;
 #ifdef USART_IT
     static uint8_t i = 0;
-    
-    while(Buffer[i] == 0 || Buffer[i] == '\r')
+    while(Buffer[i] == 0) //|| Buffer[i] == '\r' || Buffer[i] == '\n')
     {
         i++;
         if(i==BUFFERSIZE)

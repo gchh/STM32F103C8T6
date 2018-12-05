@@ -62,6 +62,7 @@ void Get_Para()
     /* 设置占空比 */
     printf("\n------设置输出占空比 x(-400~400),正负代表转动方向,并以回车键结束 \r\n");
     scanf("%d",&Num);
+    printf("Your input is %d\r\n",Num);
     while((Num > (BDCMOTOR_TIM_PERIOD+1) || (Num <- (BDCMOTOR_TIM_PERIOD+1) )))
     {
         printf("\r\n --速度输入错误,请从新输入( -400~400 )\r\n");
