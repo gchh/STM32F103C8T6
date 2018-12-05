@@ -22,13 +22,14 @@ void Get_Para()
     __IO char ch = 0;
     __IO int Num = 0;
 
-    printf("/*------ 直流有刷电机串口控制例程 -----*/\n");
-    printf("/*------ 输入电机转动参数:(以回车键结束)*/\n");
+    printf("/*------ 直流有刷电机串口控制例程 -----*/\r\n");
+    printf("/*------ 输入电机转动参数:(以回车键结束)*/\r\n");
     if(DCMotor_Param.IS_Enable==0)
     {
         //printf("      Y --> 启动      N --> 停止    \n");
-        printf("      Y --> 启动     \n");
+        printf("      Y --> 启动     \r\n");
         scanf("%c",&ch);
+        printf("Your input is %c\r\n",ch);
         /* 启动转动 */
         if((ch=='y')||(ch=='Y'))
         {
@@ -45,8 +46,9 @@ void Get_Para()
     }
     else if(DCMotor_Param.IS_Enable==1)
     {
-        printf("      N --> 停止    \n");
+        printf("      N --> 停止    \r\n");
         scanf("%c",&ch);
+        printf("Your input is %c\r\n",ch);
         /* 停止转动 */
         if((ch=='n')||(ch=='N'))
         {
@@ -58,7 +60,7 @@ void Get_Para()
     }
     
     /* 设置占空比 */
-    printf("\n------设置输出占空比 x(-400~400),正负代表转动方向,并以回车键结束 \n");
+    printf("\n------设置输出占空比 x(-400~400),正负代表转动方向,并以回车键结束 \r\n");
     scanf("%d",&Num);
     while((Num > (BDCMOTOR_TIM_PERIOD+1) || (Num <- (BDCMOTOR_TIM_PERIOD+1) )))
     {
@@ -66,12 +68,12 @@ void Get_Para()
         scanf("%d",&Num);
     }
     DCMotor_Param.Duty_Cycles = Num;
-    printf(" 占空比设置为:%d/400 \n",DCMotor_Param.Duty_Cycles);
+    printf(" 占空比设置为:%d/400 \r\n",DCMotor_Param.Duty_Cycles);
 
     /* 电机参数一览 */
     if(DCMotor_Param.IS_Enable)
     {
-        printf(" 电机状态:启动转动 ------ 输出占空比:%.2f%% \n\n",
+        printf(" 电机状态:启动转动 ------ 输出占空比:%.2f%% \r\n\n",
                 (float)DCMotor_Param.Duty_Cycles/(float)(BDCMOTOR_TIM_PERIOD+1)*100.0f);
     }
 }

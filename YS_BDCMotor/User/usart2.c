@@ -51,18 +51,23 @@ void USART_Config(void)
     USART_Init(USART, &USART_InitStructure); //调用库函数，配置USART1
     
     USART_ClearFlag(USART,USART_FLAG_TC);
+#ifdef USART_IT
     USART_ITConfig(USART, USART_IT_RXNE, ENABLE);
+#endif
     //USART_ITConfig(USART, USART_IT_TXE, ENABLE);	    
     USART_Cmd(USART, ENABLE);
 
+#ifdef USART_IT
     /* 配置串口中断并使能，需要放在UART_Init函数后执行修改才有效 */    
     NVIC_SetPriority(USART1_IRQn, 0);
     NVIC_EnableIRQ(USART1_IRQn); 
+#endif
 }
 
-
+#ifdef USART_IT
 void USART1_IRQHandler(void)
 {
+    //if(USART_ReceiveData(USART) == '\r') USART_ClearFlag(USART, USART_FLAG_RXNE);//当要求输入Y时，如果输入超过2个非Y字符或数字时，在输入Y，会接收不到这个Y，收到的是'\r'，加上这句就可以。
     if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
     {
         USART_ClearFlag(USART, USART_FLAG_ORE);
@@ -72,11 +77,15 @@ void USART1_IRQHandler(void)
     {
         //USART_ClearITPendingBit(USART, USART_IT_RXNE);
 
-        Buffer[0]=USART_ReceiveData(USART);
+        //if(USART_ReceiveData(USART) != '\r')
+        //{
+            Buffer[0]=USART_ReceiveData(USART);
         
-        USART_ClearFlag(USART, USART_FLAG_RXNE);
+            USART_ClearFlag(USART, USART_FLAG_RXNE);
+        //}
     }
 }
+#endif
 
 /**
   * 函数功能: 重定向c库函数printf到DEBUG_USARTx
@@ -104,16 +113,27 @@ int fputc(int ch, FILE *f)
   */
 int fgetc(FILE * f)
 {
-  static uint8_t i = 0;
-  uint8_t ch = 0;
-  while(Buffer[i] == 0)
-  {
-    i++;
-    if(i==BUFFERSIZE)
-      i = 0;
-  }
-  ch = Buffer[i];
-  Buffer[i] = 0;
-  return ch;
+    uint8_t ch = 0;
+#ifdef USART_IT
+    static uint8_t i = 0;
+    
+    while(Buffer[i] == 0)
+    {
+        i++;
+        if(i==BUFFERSIZE)
+            i = 0;
+    }
+    ch = Buffer[i];
+    Buffer[i] = 0;
+#else
+    if(USART_ReceiveData(USART) == '\r')ch = USART_ReceiveData(USART);//USART_ClearFlag(USART, USART_FLAG_RXNE);//当要求输入Y时，如果输入超过2个非Y字符或数字时，在输入Y，会接收不到这个Y，收到的是'\r'，加上这句就可以。
+    if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
+    {
+        USART_ClearFlag(USART, USART_FLAG_ORE);
+    }
+    while(USART_GetFlagStatus(USART, USART_FLAG_RXNE) == RESET);
+    ch = USART_ReceiveData(USART);
+#endif  
+    return ch;
 }
 

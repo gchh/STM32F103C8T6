@@ -18,4 +18,7 @@
 void USART_GPIO_Init(void);
 void USART_Config(void);
 
+
+#define USART_IT // π”√÷–∂œ
+
 #endif
