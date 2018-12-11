@@ -19,9 +19,9 @@
 #define KEY4_GPIO_PORT              GPIOB
 #define KEY4_GPIO_PIN      		    GPIO_Pin_0
 
-#define KEY5_GPIO_RCC               RCC_APB2Periph_GPIOA
-#define KEY5_GPIO_PORT              GPIOA
-#define KEY5_GPIO_PIN      		    GPIO_Pin_7
+#define KEY5_GPIO_RCC               RCC_APB2Periph_GPIOB
+#define KEY5_GPIO_PORT              GPIOB
+#define KEY5_GPIO_PIN      		    GPIO_Pin_9
 
 #define KEY_NONE                    0
 #define KEY_SPEED_UP                1

@@ -416,6 +416,11 @@
               <FileType>1</FileType>
               <FilePath>..\User\usart2.c</FilePath>
             </File>
+            <File>
+              <FileName>Encoder.c</FileName>
+              <FileType>1</FileType>
+              <FilePath>..\User\Encoder.c</FilePath>
+            </File>
           </Files>
         </Group>
         <Group>

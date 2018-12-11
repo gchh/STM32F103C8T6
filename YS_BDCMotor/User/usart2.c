@@ -59,13 +59,13 @@ void USART_Config(void)
 
 #ifdef USART_IT
     /* 配置串口中断并使能，需要放在UART_Init函数后执行修改才有效 */    
-    NVIC_SetPriority(USART1_IRQn, 0);
-    NVIC_EnableIRQ(USART1_IRQn); 
+    NVIC_SetPriority(USART_IRQn, 0);
+    NVIC_EnableIRQ(USART_IRQn); 
 #endif
 }
 
 #ifdef USART_IT
-void USART1_IRQHandler(void)
+void USART_IRQHANDLER(void)
 {
     if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
     {

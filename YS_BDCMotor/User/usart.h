@@ -14,6 +14,8 @@
 #define USART_TX_PIN         GPIO_Pin_9  // out
 #define USART_RX_PIN         GPIO_Pin_10 // in  
 
+#define USART_IRQHANDLER                      USART1_IRQHandler
+#define USART_IRQn                            USART1_IRQn
 
 void USART_GPIO_Init(void);
 void USART_Config(void);
