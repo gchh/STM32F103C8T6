@@ -125,7 +125,6 @@ int main(void)
     /* 高级控制定时器初始化并配置PWM输出功能 */
     BDCMOTOR_GPIO_Init();
     BDCMOTOR_TIMx_Init();
-    start_flag = 1;
     
 #ifdef UART_CONTROL     
     //printf("*************************************************************\r\n");
@@ -161,6 +160,7 @@ int main(void)
                 DCMotor_Param.Duty_Cycles = -DCMotor_Param.Duty_Cycles;
             }
             SetMotorSpeed(DCMotor_Param.Duty_Cycles);
+            start_flag = 1;
         }
         else
         {
@@ -247,6 +247,7 @@ void SYSTICK_Callback(void)
       Speed = (float)CaptureNumber/PPR;
       printf("电机实际转动速度%0.2f r/s \r\n",Speed);
 
+      if(Speed==0)start_flag = 0;
       OverflowCount = 0;
       TIM_SetCounter(ENCODER_TIMx, 0);
       time_count=0;
