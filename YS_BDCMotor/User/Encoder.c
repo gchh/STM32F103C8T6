@@ -1,5 +1,7 @@
 #include "Encoder.h"
 
+int16_t OverflowCount = 0;//定时器溢出次数
+
 void ENCODER_GPIO_Init(void)
 {
     //定义一个GPIO_InitTypeDef 类型的结构体
@@ -23,7 +25,7 @@ void ENCODER_GPIO_Init(void)
 void ENCODER_TIMx_Init(void)
 {
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-    TIM_ICInitTypeDef sEncoderConfig;
+    //TIM_ICInitTypeDef sEncoderConfig;
     RCC_APB1PeriphClockCmd(ENCODER_TIM_RCC, ENABLE);//使能外设时钟
     
     /* 定时器基本环境配置 */
@@ -35,8 +37,52 @@ void ENCODER_TIMx_Init(void)
     TIM_TimeBaseStructure.TIM_RepetitionCounter = 0;
     TIM_TimeBaseInit(ENCODER_TIMx, &TIM_TimeBaseStructure);    
     
+    TIM_SetCounter(ENCODER_TIMx, 0);
+   
+    TIM_ClearFlag(ENCODER_TIMx, TIM_FLAG_Update); // 清除更新中断标志位
+    TIM_UpdateRequestConfig(ENCODER_TIMx, TIM_UpdateSource_Regular); // 仅允许计数器溢出才产生更新中断
+    TIM_ITConfig(ENCODER_TIMx, TIM_IT_Update, ENABLE); // 使能更新中断
+    
+#if 1    
+    TIM_EncoderInterfaceConfig(ENCODER_TIMx, TIM_ENCODERMODE_TIx, TIM_ICPolarity_Rising, TIM_ICPolarity_Rising);
+    ENCODER_TIMx->CCER |= TIM_CCER_CC1E | TIM_CCER_CC2E;
+#else
+    sEncoderConfig.TIM_Channel = TIM_Channel_1;
+    sEncoderConfig.TIM_ICFilter = 0;
+    sEncoderConfig.TIM_ICPolarity = TIM_ICPolarity_Rising;
+    sEncoderConfig.TIM_ICPrescaler = TIM_ICPSC_DIV1;
+    sEncoderConfig.TIM_ICSelection = TIM_ICSelection_DirectTI;
+    TIM_ICInit(ENCODER_TIMx, &sEncoderConfig);
+    
+    sEncoderConfig.TIM_Channel = TIM_Channel_2;
+    TIM_ICInit(ENCODER_TIMx, &sEncoderConfig);
+#endif
+
+    NVIC_SetPriority(ENCODER_TIM_IRQn, 0);
+    NVIC_EnableIRQ(ENCODER_TIM_IRQn); 
+    
+    TIM_Cmd(ENCODER_TIMx, ENABLE);
 }
 
 
-
+/**
+  * 函数功能: 中断服务函数
+  * 输入参数: 无
+  * 返 回 值: 无
+  * 说    明: 记录溢出次数
+  */
+void ENCODER_TIM_IRQHANDLER(void)
+{
+    /* TIM Update event */
+    //if(TIM_GetFlagStatus(ENCODER_TIMx, TIM_FLAG_Update) != RESET)
+    if(TIM_GetITStatus(ENCODER_TIMx, TIM_IT_Update) !=RESET)
+    {
+        TIM_ClearFlag(ENCODER_TIMx, TIM_FLAG_Update); // 清除更新中断标志位
+        
+        if(ENCODER_TIMx->CR1 & TIM_CR1_DIR)
+            OverflowCount--;       //向下计数溢出
+        else
+            OverflowCount++;       //向上计数溢出
+    }
+}
 

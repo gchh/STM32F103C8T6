@@ -26,5 +26,9 @@
 // 定义定时器周期，当定时器开始计数到ENCODER_TIMx_PERIOD值时更新定时器并生成对应事件和中断
 #define ENCODER_TIM_PERIOD                  0xFFFF
 
+extern int16_t OverflowCount ;//定时器溢出次数
+
+void ENCODER_GPIO_Init(void);
+void ENCODER_TIMx_Init(void);
 
 #endif

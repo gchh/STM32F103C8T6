@@ -143,6 +143,8 @@ void SysTick_Handler(void)
     uwTick++;
     
     if(timer_1ms<250)timer_1ms++;	
+    
+    SYSTICK_Callback();
 }
 #endif
 /******************************************************************************/
