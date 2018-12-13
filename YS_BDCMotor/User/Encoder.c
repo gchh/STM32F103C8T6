@@ -11,14 +11,14 @@ void ENCODER_GPIO_Init(void)
     
     /*PA6: TIM3_CH1*/
     GPIO_InitStructure.GPIO_Pin = ENCODER_TIM_CH1_PIN;//选择要用的GPIO引脚
-    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//GPIO_Mode_AF_PP; //设置引脚模式为复用功能推免输出模式						 
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//设置引脚速度为50MHZ         
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//GPIO_Mode_AF_PP; //设置引脚模式为浮空输入模式						 
+    GPIO_InitStructure.GPIO_Speed = 0;//GPIO_Speed_50MHz;//设置引脚速度为50MHZ----只有引脚为输出时，才需要设置速度
     GPIO_Init(ENCODER_TIM_CH1_PORT, &GPIO_InitStructure);//调用库函数，初始化GPIO    
     
     /*PA7: TIM3_CH2*/
     GPIO_InitStructure.GPIO_Pin = ENCODER_TIM_CH2_PIN;//选择要用的GPIO引脚
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_IN_FLOATING;//GPIO_Mode_AF_PP; //设置引脚模式为浮空输入模式						 
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;//设置引脚速度为50MHZ         
+    GPIO_InitStructure.GPIO_Speed = 0;//GPIO_Speed_50MHz;//设置引脚速度为50MHZ         
     GPIO_Init(ENCODER_TIM_CH2_PORT, &GPIO_InitStructure);//调用库函数，初始化GPIO      
 }
 
