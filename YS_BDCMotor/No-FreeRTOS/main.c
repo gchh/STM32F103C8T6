@@ -10,6 +10,9 @@ __IO uint8_t  start_flag=0;
 __IO uint16_t time_count=0;        // 时间计数，每1ms增加一(与滴定时器频率有关)
 __IO int32_t CaptureNumber=0;      // 输入捕获数
 uint8_t timer_1ms;
+#ifdef LCD_DISPLAYER  
+char str[50]; 
+#endif
 
 void Key_process(void);
 
@@ -98,6 +101,10 @@ int main(void)
 {
     //__IO char ch = 0,buff[100];
     //float ft;
+#ifdef LCD_DISPLAYER
+    uint8_t lcd_id[12];			//存放LCD ID字符串
+    float duty;
+#endif
     
 	/*Configure the SysTick to have interrupt in 1ms time basis*/
 	//in the file system_stm3210x.c, configure the SystemCoreClock
@@ -125,7 +132,15 @@ int main(void)
     /* 高级控制定时器初始化并配置PWM输出功能 */
     BDCMOTOR_GPIO_Init();
     BDCMOTOR_TIMx_Init();
-    
+
+#ifdef LCD_DISPLAYER
+	LCD_Init();
+	POINT_COLOR=RED;
+    LCD_Clear(BLACK);
+	sprintf((char*)lcd_id,"LCD ID:%04X",lcddev.id);//将LCD ID打印到lcd_id数组。	
+    LCD_ShowString(30,130,200,16,16,lcd_id);		//显示LCD ID	
+#endif
+
 #ifdef UART_CONTROL     
     //printf("*************************************************************\r\n");
     //printf("*                                                           *\r\n");
@@ -149,6 +164,7 @@ int main(void)
         Get_Para();
         if(DCMotor_Param.IS_Enable)
         {
+            duty=(float)DCMotor_Param.Duty_Cycles/(float)(BDCMOTOR_TIM_PERIOD+1)*100.0f;
             /* 设置方向和速度 */
             if(DCMotor_Param.Duty_Cycles>0)
             {
@@ -168,7 +184,12 @@ int main(void)
             DCMotor_Param.Duty_Cycles = 0;
             SetMotorSpeed(DCMotor_Param.Duty_Cycles);  
             SetMotorStop();
+            duty=0;
         }
+#ifdef LCD_DISPLAYER        
+        sprintf(str, "Duty: %.2f%%", duty); 
+        LCD_ShowString(30,90,200,16,16,(u8 *)str);  
+#endif
 #else        
         KEY_Scan();
         if(key_id_done==0)Key_process();
@@ -233,26 +254,29 @@ void Key_process(void)
   */
 void SYSTICK_Callback(void)
 {
-  if(start_flag) // 等待脉冲输出后才开始计时
-  {
-    time_count++;         // 每1ms自动增一
-    if(time_count==1000)  // 1s
+    if(start_flag) // 等待脉冲输出后才开始计时
     {
-      float Speed = 0;
-      CaptureNumber = ( int32_t )TIM_GetCounter(ENCODER_TIMx)+OverflowCount*65536;
-      printf("Inputs:%d \r\n",CaptureNumber);
-      // 4 : 使用定时器编码器接口捕获AB相的上升沿和下降沿，一个脉冲*4.
-      // 11：编码器线数(转速一圈输出脉冲数)
-      // 270：电机减数比，内部电机转动圈数与电机输出轴转动圈数比，即减速齿轮比
-      Speed = (float)CaptureNumber/PPR;
-      printf("电机实际转动速度%0.2f r/s \r\n",Speed);
-
-      if(Speed==0)start_flag = 0;
-      OverflowCount = 0;
-      TIM_SetCounter(ENCODER_TIMx, 0);
-      time_count=0;
+        time_count++;         // 每1ms自动增一
+        if(time_count==1000)  // 1s
+        {
+            float Speed = 0;
+            CaptureNumber = ( int32_t )TIM_GetCounter(ENCODER_TIMx)+OverflowCount*65536;
+            printf("Inputs:%d \r\n",CaptureNumber);
+            // 4 : 使用定时器编码器接口捕获AB相的上升沿和下降沿，一个脉冲*4.
+            // 11：编码器线数(转速一圈输出脉冲数)
+            // 270：电机减数比，内部电机转动圈数与电机输出轴转动圈数比，即减速齿轮比
+            Speed = (float)CaptureNumber/PPR;
+            printf("电机实际转动速度%0.2f r/s \r\n",Speed);
+#ifdef LCD_DISPLAYER        
+            sprintf(str, "motor speed: %.2fr/s", Speed); 
+            LCD_ShowString(30,50,200,16,16,(u8 *)str);  
+#endif        
+            if(Speed==0)start_flag = 0;
+            OverflowCount = 0;
+            TIM_SetCounter(ENCODER_TIMx, 0);
+            time_count=0;
+        }
     }
-  }
 }
 
 
