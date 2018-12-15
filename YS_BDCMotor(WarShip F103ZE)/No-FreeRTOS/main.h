@@ -9,6 +9,7 @@
 #include "key.h"
 #include "usart.h"
 #include "Encoder.h"
+#include "lcd.h"
 
 extern uint8_t timer_1ms;
 

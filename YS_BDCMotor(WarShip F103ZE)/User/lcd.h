@@ -1,5 +1,9 @@
 #ifndef __LCD_H
 #define __LCD_H		
+
+#define LCD_DISPLAYER //正点原子战舰TFTLCD 
+
+#ifdef LCD_DISPLAYER
 #include "stm32f10x.h"	 
 #include "stdlib.h"
 //////////////////////////////////////////////////////////////////////////////////	 
@@ -58,7 +62,6 @@
 //1,新增NT35510（ID:5510）驱动器的支持
 //////////////////////////////////////////////////////////////////////////////////	
 
- 
   
 //LCD重要参数集
 typedef struct  
@@ -166,7 +169,11 @@ void LCD_WriteRAM_Prepare(void);
 void LCD_WriteRAM(u16 RGB_Code);		  
 void LCD_Scan_Dir(u8 dir);							//设置屏扫描方向
 void LCD_Display_Dir(u8 dir);						//设置屏幕显示方向
-void LCD_Set_Window(u16 sx,u16 sy,u16 width,u16 height);//设置窗口					   																			 
+void LCD_Set_Window(u16 sx,u16 sy,u16 width,u16 height);//设置窗口			
+
+void LCD_ShowChar_CH(u16 x,u16 y,u8 num,u8 size,u8 mode);
+void LCD_ShowString_CH(u16 x,u16 y,u16 width,u16 height,u8 size,u8 start,u8 number);
+
 //9320/9325 LCD寄存器  
 #define R0             0x00
 #define R1             0x01
@@ -277,6 +284,8 @@ void LCD_Set_Window(u16 sx,u16 sy,u16 width,u16 height);//设置窗口
 #define R193           0xC1
 #define R229           0xE5							  		 
 #endif  
+
+#endif
 	 
 	 
 

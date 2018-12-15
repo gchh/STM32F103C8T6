@@ -2,7 +2,9 @@
 #include "stdlib.h"
 #include "lcd_font.h" 
 #include "stdio.h"	//#include "usart.h"	 
-#include "delay.h"	   
+#include "delay.h"	 
+
+#ifdef LCD_DISPLAYER
 //////////////////////////////////////////////////////////////////////////////////	 
 //本程序只供学习使用，未经作者许可，不得用于其它任何用途
 //ALIENTEK战舰STM32开发板
@@ -2703,12 +2705,13 @@ void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode)
 {  							  
     u8 temp,t1,t;
 	u16 y0=y;
-	u16 colortemp=POINT_COLOR;      			     
+	u16 colortemp=POINT_COLOR;      	
+    u8 csize=(size/8+((size%8)?1:0))*(size/2);		//得到字体一个字符对应点阵集所占的字节数  
 	//设置窗口		   
 	num=num-' ';//得到偏移后的值
 	if(!mode) //非叠加方式
 	{
-	    for(t=0;t<size;t++)
+	    for(t=0;t<csize;t++)
 	    {   
 			if(size==12)temp=asc2_1206[num][t];  //调用1206字体
 			else if(size==16) temp=asc2_1608[num][t];		 //调用1608字体 
@@ -2733,7 +2736,7 @@ void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode)
 	    }    
 	}else//叠加方式
 	{
-	    for(t=0;t<size;t++)
+	    for(t=0;t<csize;t++)
 	    {   
 			if(size==12)temp=asc2_1206[num][t];  //调用1206字体
 			else if(size==16) temp=asc2_1608[num][t];		 //调用1608字体 	
@@ -2833,8 +2836,8 @@ void LCD_ShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p)
     {       
         if(x>=width){x=x0;y+=size;}
         if(y>=height)break;//退出
-        LCD_ShowChar(x,y,*p,size,0);
-        x+=size/2;
+        LCD_ShowChar(x,y,*p,size,1);
+        x+=size/2; //英文字符宽度是高度的一半
         p++;
     }  
 }
@@ -2848,11 +2851,13 @@ void LCD_ShowChar_CH(u16 x,u16 y,u8 num,u8 size,u8 mode)
 {  							  
     u8 temp,t1,t;
 	u16 y0=y;
-	u16 colortemp=POINT_COLOR;      			     
+	u16 colortemp=POINT_COLOR;      
+    //size=16, csize=32; size=24, csize=72;
+    u8 csize=(size/4)*(size/2);		//得到字体一个字符对应点阵集所占的字节数   
 	//设置窗口		   
 	if(!mode) //非叠加方式
 	{
-	    for(t=0;t<size;t++)
+	    for(t=0;t<csize;t++)
 	    {   
 			if(size==16) temp=zn_1616[num][t];		 //调用16*16字体 
             else temp=zn_2424[num][t];	//调用24*24字体
@@ -2875,7 +2880,7 @@ void LCD_ShowChar_CH(u16 x,u16 y,u8 num,u8 size,u8 mode)
 	    }    
 	}else//叠加方式
 	{
-	    for(t=0;t<size;t++)
+	    for(t=0;t<csize;t++)
 	    {   
 			if(size==16) temp=zn_1616[num][t];		 //调用16*16字体 
             else temp=zn_2424[num][t];	//调用24*24字体
@@ -2914,18 +2919,13 @@ void LCD_ShowString_CH(u16 x,u16 y,u16 width,u16 height,u8 size,u8 start,u8 numb
     {       
         if(x>=width){x=x0;y+=size;}
         if(y>=height)break;//退出
-        LCD_ShowChar_CH(x,y,i,size,0);
-        x+=size/2;
+        LCD_ShowChar_CH(x,y,i,size,1);
+        x+=size; //英文字符宽度和高度相同
         i++;
     }while(i<(start+number));
 }
 
-
-
-
-
-
-
+#endif
 
 
 
