@@ -2711,7 +2711,9 @@ void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode)
 	    for(t=0;t<size;t++)
 	    {   
 			if(size==12)temp=asc2_1206[num][t];  //调用1206字体
-			else temp=asc2_1608[num][t];		 //调用1608字体 	                          
+			else if(size==16) temp=asc2_1608[num][t];		 //调用1608字体 
+            else //if(size==24)
+                temp=asc2_2412[num][t];	//调用2412字体
 	        for(t1=0;t1<8;t1++)
 			{			    
 		        if(temp&0x80)POINT_COLOR=colortemp;
@@ -2734,7 +2736,9 @@ void LCD_ShowChar(u16 x,u16 y,u8 num,u8 size,u8 mode)
 	    for(t=0;t<size;t++)
 	    {   
 			if(size==12)temp=asc2_1206[num][t];  //调用1206字体
-			else temp=asc2_1608[num][t];		 //调用1608字体 	                          
+			else if(size==16) temp=asc2_1608[num][t];		 //调用1608字体 	
+            else //if(size==24)
+                temp=asc2_2412[num][t];	//调用2412字体
 	        for(t1=0;t1<8;t1++)
 			{			    
 		        if(temp&0x80)LCD_DrawPoint(x,y); 
@@ -2835,12 +2839,86 @@ void LCD_ShowString(u16 x,u16 y,u16 width,u16 height,u8 size,u8 *p)
     }  
 }
 
+//在指定位置显示一个中文字符
+//x,y:起始坐标
+//num:要显示的字符:" "--->"~"
+//size:字体大小 16/24
+//mode:叠加方式(1)还是非叠加方式(0)
+void LCD_ShowChar_CH(u16 x,u16 y,u8 num,u8 size,u8 mode)
+{  							  
+    u8 temp,t1,t;
+	u16 y0=y;
+	u16 colortemp=POINT_COLOR;      			     
+	//设置窗口		   
+	if(!mode) //非叠加方式
+	{
+	    for(t=0;t<size;t++)
+	    {   
+			if(size==16) temp=zn_1616[num][t];		 //调用16*16字体 
+            else temp=zn_2424[num][t];	//调用24*24字体
+	        for(t1=0;t1<8;t1++)
+			{			    
+		        if(temp&0x80)POINT_COLOR=colortemp;
+				else POINT_COLOR=BACK_COLOR;
+				LCD_DrawPoint(x,y);	
+				temp<<=1;
+				y++;
+				if(x>=lcddev.width){POINT_COLOR=colortemp;return;}//超区域了
+				if((y-y0)==size)
+				{
+					y=y0;
+					x++;
+					if(x>=lcddev.width){POINT_COLOR=colortemp;return;}//超区域了
+					break;
+				}
+			}  	 
+	    }    
+	}else//叠加方式
+	{
+	    for(t=0;t<size;t++)
+	    {   
+			if(size==16) temp=zn_1616[num][t];		 //调用16*16字体 
+            else temp=zn_2424[num][t];	//调用24*24字体
+	        for(t1=0;t1<8;t1++)
+			{			    
+		        if(temp&0x80)LCD_DrawPoint(x,y); 
+				temp<<=1;
+				y++;
+				if(x>=lcddev.height){POINT_COLOR=colortemp;return;}//超区域了
+				if((y-y0)==size)
+				{
+					y=y0;
+					x++;
+					if(x>=lcddev.width){POINT_COLOR=colortemp;return;}//超区域了
+					break;
+				}
+			}  	 
+	    }     
+	}
+	POINT_COLOR=colortemp;	    	   	 	  
+}   
 
-
-
-
-
-
+//显示中文字符串
+//x,y:起点坐标
+//width,height:区域大小  
+//size:字体大小
+//start:在中文字模那个位置开始显示
+//number:要显示的中文个数 
+void LCD_ShowString_CH(u16 x,u16 y,u16 width,u16 height,u8 size,u8 start,u8 number)
+{   
+    u8 i=start;    
+	u8 x0=x;
+	width+=x;
+	height+=y;
+    do
+    {       
+        if(x>=width){x=x0;y+=size;}
+        if(y>=height)break;//退出
+        LCD_ShowChar_CH(x,y,i,size,0);
+        x+=size/2;
+        i++;
+    }while(i<(start+number));
+}
 
 
 

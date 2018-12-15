@@ -188,7 +188,7 @@ int main(void)
         }
 #ifdef LCD_DISPLAYER        
         sprintf(str, "Duty: %.2f%%", duty); 
-        LCD_ShowString(30,90,200,16,16,(u8 *)str);  
+        LCD_ShowString(30,90,200,24,24,(u8 *)str); //LCD_ShowString(30,90,200,16,16,(u8 *)str);  
 #endif
 #else        
         KEY_Scan();
