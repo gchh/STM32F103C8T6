@@ -102,7 +102,7 @@ int main(void)
     //__IO char ch = 0,buff[100];
     //float ft;
 #ifdef LCD_DISPLAYER
-    uint8_t i,lcd_id[12];			//存放LCD ID字符串
+    uint8_t lcd_id[12];			//存放LCD ID字符串
     float duty;
 #endif
     
@@ -138,7 +138,11 @@ int main(void)
 	POINT_COLOR=RED;
     LCD_Clear(BLACK);
 	sprintf((char*)lcd_id,"LCD ID:%04X",lcddev.id);//将LCD ID打印到lcd_id数组。	
+    LCD_ShowString_CH(5,20,200,24,24,0,5); 
+    LCD_ShowString_CH(5,70,200,24,24,5,3);
+    LCD_ShowChar_CH(77,70,4,24,1);
     LCD_ShowString(30,130,200,12,12,lcd_id);		//显示LCD ID	
+    
 #endif
 
 #ifdef UART_CONTROL     
@@ -191,10 +195,12 @@ int main(void)
 #endif
         }
 #ifdef LCD_DISPLAYER    
-        for(i=0;i<25;i++)str[i]=0;
-        sprintf(str, "Duty: %.2f%%", duty); 
-        LCD_ShowString(30,100,200,16,16,(u8 *)str);
-        LCD_ShowString_CH(5,70,200,24,24,5,3);
+//        LCD_Fill(30,100,230,116,BLACK);//LCD_Clear(BLACK);
+//        sprintf(str, "Duty: %.2f%%", duty); 
+//        LCD_ShowString(30,100,200,16,16,(u8 *)str);
+        LCD_Fill(101,70,201,94,BLACK);//LCD_Clear(BLACK);
+        sprintf(str, "%.2f%%", duty); 
+        LCD_ShowString(101,70,100,24,24,(u8 *)str);
 #endif
 #else        
         KEY_Scan();
@@ -273,10 +279,13 @@ void SYSTICK_Callback(void)
             // 270：电机减数比，内部电机转动圈数与电机输出轴转动圈数比，即减速齿轮比
             Speed = (float)CaptureNumber/PPR;
             printf("电机实际转动速度%0.2f r/s \r\n",Speed);
-#ifdef LCD_DISPLAYER        
-            sprintf(str, "motor speed: %.2fr/s", Speed); 
-            LCD_ShowString(30,50,200,16,16,(u8 *)str);  
-            LCD_ShowString_CH(5,20,200,24,24,0,5); 
+#ifdef LCD_DISPLAYER 
+//            LCD_Fill(30,50,230,66,BLACK);//LCD_Clear(BLACK);
+//            sprintf(str, "motor speed: %.2fr/s", Speed); 
+//            LCD_ShowString(30,50,200,16,16,(u8 *)str);  
+            LCD_Fill(125,20,225,44,BLACK);//LCD_Clear(BLACK);
+            sprintf(str, "%.2fr/s", Speed); 
+            LCD_ShowString(125,20,100,24,24,(u8 *)str);  
 #endif        
             if(Speed==0)start_flag = 0;
             OverflowCount = 0;
