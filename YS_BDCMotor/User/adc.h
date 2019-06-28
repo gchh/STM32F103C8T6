@@ -23,6 +23,10 @@
 #define ADCx_DMA_IRQx_Handler            DMA1_Channel1_IRQHandler
 
 
+#define ADC_Base      9                         // 取2的整数倍作为缓存区大小,得到14bits的ADC值
+/* 使用DMA传输数据,采集n个数据点的时间是0.65ms,采样率大约是 1500 KHz */
+#define ADC_BUFFER    512                       // 采样数据缓存区
+
 
 #define VOLT_REF      3.307f                    // ADC参考电压.理论值是3.3V,通过实际测量得到3.307V
 /* 根据驱动板设置放大倍数 和 采样电阻 */
@@ -40,7 +44,8 @@
 
 void ADC_CUR_GPIO_Init(void);
 void ADC_CUR_Init(void);
-
+void ADC_DMA_Init(void);
+void ADC_Start_DMA(void);
 
 
 
