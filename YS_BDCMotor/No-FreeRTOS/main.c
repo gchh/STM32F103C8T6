@@ -126,6 +126,13 @@ int main(void)
     BDCMOTOR_GPIO_Init();
     BDCMOTOR_TIMx_Init();
 
+    /* ADC-DMA 初始化 */
+    ADC_CUR_GPIO_Init();
+    ADC_CUR_Init();
+    ADC_DMA_Init();
+    /* 启动AD转换并使能DMA传输和中断 */
+    ADC_Start_DMA();
+  
 #ifdef UART_CONTROL     
     //printf("*************************************************************\r\n");
     //printf("*                                                           *\r\n");
@@ -231,8 +238,12 @@ void Key_process(void)
   * 返 回 值: 无
   * 说    明: 每发生一次滴答定时器中断进入该回调函数一次
   */
+extern __IO uint32_t uwTick;
+__IO float Volt_Result = 0;
 void SYSTICK_Callback(void)
 {
+    //__IO float Volt_Result = 0;
+    
     if(start_flag) // 等待脉冲输出后才开始计时
     {
         time_count++;         // 每1ms自动增一
@@ -245,7 +256,7 @@ void SYSTICK_Callback(void)
             // 11：编码器线数(转速一圈输出脉冲数)
             // 270：电机减数比，内部电机转动圈数与电机输出轴转动圈数比，即减速齿轮比
             Speed = (float)CaptureNumber/PPR;
-            printf("电机实际转动速度%0.2f r/s \r\n",Speed);
+            printf("电机实际转动速度%0.2f r/s \r\nVolt: %.1f mV -- Curr: %d mA\n",Speed,Volt_Result,(int32_t)(ADC_CurrentValue+10));
      
             if(Speed==0)start_flag = 0;
             OverflowCount = 0;
@@ -253,6 +264,27 @@ void SYSTICK_Callback(void)
             time_count=0;
         }
     }
+    
+    /* 数据反馈周期是50ms,由于电流采集周期大约是 2ms,所以数据反馈周期最好不要低于2ms */
+    if((uwTick % 50) == 0)
+    {
+        /* 连续采样16次以后,以第17次作为校准偏差值 */
+        OffsetCnt_Flag++;
+        if(OffsetCnt_Flag >= 16)
+        {
+            if(OffsetCnt_Flag == 16)
+            {
+                OffSetHex = ADC_Resul;
+            }
+            OffsetCnt_Flag = 32;
+            ADC_Resul -= OffSetHex;     // 减去偏差值
+        }
+        /* 计算电压值和电流值 */
+        Volt_Result = ( (float)( (float)(ADC_Resul) * VOLT_RESOLUTION) );
+        ADC_CurrentValue = (float)( (Volt_Result / GAIN) / SAMPLING_RES);
+        /* 直接使用串口助手打印电流电压值 */
+        //printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
+    }    
 }
 
 

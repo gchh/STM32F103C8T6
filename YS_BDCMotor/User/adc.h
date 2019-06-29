@@ -23,9 +23,9 @@
 #define ADCx_DMA_IRQx_Handler            DMA1_Channel1_IRQHandler
 
 
-#define ADC_Base      9                         // 取2的整数倍作为缓存区大小,得到14bits的ADC值
+#define ADC_Base      10//9                         // 取2的整数倍作为缓存区大小,得到14bits的ADC值
 /* 使用DMA传输数据,采集n个数据点的时间是0.65ms,采样率大约是 1500 KHz */
-#define ADC_BUFFER    512                       // 采样数据缓存区
+#define ADC_BUFFER    1024//512                       // 采样数据缓存区
 
 
 #define VOLT_REF      3.307f                    // ADC参考电压.理论值是3.3V,通过实际测量得到3.307V
@@ -47,15 +47,10 @@ void ADC_CUR_Init(void);
 void ADC_DMA_Init(void);
 void ADC_Start_DMA(void);
 
-
-
-
-
-
-
-
-
-
+extern __IO float ADC_CurrentValue;
+extern __IO int32_t ADC_Resul;
+extern __IO uint32_t OffsetCnt_Flag;
+extern __IO  int32_t OffSetHex ;             // 偏差值
 
 
 #endif
