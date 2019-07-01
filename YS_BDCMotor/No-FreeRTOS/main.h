@@ -10,6 +10,7 @@
 #include "usart.h"
 #include "Encoder.h"
 #include "adc.h"
+#include "oled.h"
 
 extern uint8_t timer_1ms;
 
