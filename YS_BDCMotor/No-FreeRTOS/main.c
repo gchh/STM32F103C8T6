@@ -11,8 +11,6 @@ __IO uint16_t time_count=0;        // 时间计数，每1ms增加一(与滴定时器频率有关)
 __IO int32_t CaptureNumber=0;      // 输入捕获数
 uint8_t timer_1ms;
 
-__IO float oled_volt = 0, oled_speed = 0;;
-
 void Key_process(void);
 
 #ifdef UART_CONTROL
@@ -146,20 +144,7 @@ int main(void)
     printf("^^^^--请使用硬石上位机收发串口数据--^^^^\r\n");
 #endif
     while(1)
-    {	
-        Clear_Screen(0);
-        Display_String(0, 0, "Current:", Red);
-        Display_Num(64,0,(int32_t)(ADC_CurrentValue+10), 4, Green);
-        Display_String(96, 0, "mA", Blue);
-        Clear_Screen(1);
-        Display_String(0, 16, "Volt:", Red);
-        Display_Num(64,16,(int32_t)(oled_volt), 4, Green);
-        Display_String(96, 16, "mV", Blue);  
-        Clear_Screen(2);
-        Display_String(0, 32, "Speed:", Red);
-        if(oled_speed>=0) Display_Num(64,32,(int32_t)(oled_speed), 4, Green);
-        else  Display_Num(64,32,(int32_t)(0-oled_speed), 4, Green);
-        Display_String(96, 32, "r/s", Blue);          
+    {	    
 #ifdef UART_CONTROL 
         //printf("/*------ please input one char:(end with Enter)*/\r\n");
         //scanf("%c",&ch); 
@@ -258,6 +243,7 @@ void Key_process(void)
 extern __IO uint32_t uwTick;
 void SYSTICK_Callback(void)
 {
+    unsigned char str[10];
     __IO float Volt_Result = 0;
     
     if(start_flag) // 等待脉冲输出后才开始计时
@@ -272,9 +258,14 @@ void SYSTICK_Callback(void)
             // 11：编码器线数(转速一圈输出脉冲数)
             // 270：电机减数比，内部电机转动圈数与电机输出轴转动圈数比，即减速齿轮比
             Speed = (float)CaptureNumber/PPR;
-            oled_speed = Speed;
             printf("电机实际转动速度%0.2f r/s \r\n",Speed);
-     
+
+            Clear_Screen(2);
+            Display_String(0, 32, "Speed:", Red);
+            sprintf((char *)str, "%0.2f", Speed);
+            Display_String(64, 32, str, Green);//
+            Display_String(104, 32, "r/s", Blue);
+        
             if(Speed==0)start_flag = 0;
             OverflowCount = 0;
             TIM_SetCounter(ENCODER_TIMx, 0);
@@ -283,7 +274,7 @@ void SYSTICK_Callback(void)
     }
     
     /* 数据反馈周期是50ms,由于电流采集周期大约是 2ms,所以数据反馈周期最好不要低于2ms */
-    if((uwTick % 50) == 0)
+    if((uwTick % 50) == 0)//((uwTick % 50) == 0&&OffsetCnt_Flag<32 || (uwTick % 500) == 0&&OffsetCnt_Flag>=32)//
     {
         /* 连续采样16次以后,以第17次作为校准偏差值 */
         OffsetCnt_Flag++;
@@ -298,10 +289,23 @@ void SYSTICK_Callback(void)
         }
         /* 计算电压值和电流值 */
         Volt_Result = ( (float)( (float)(ADC_Resul) * VOLT_RESOLUTION) );
-        oled_volt = Volt_Result;
         ADC_CurrentValue = (float)( (Volt_Result / GAIN) / SAMPLING_RES);
         /* 直接使用串口助手打印电流电压值 */
-        //printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
+        if((uwTick % 1000) == 0)
+        {
+        printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
+
+        Clear_Screen(0);
+        Display_String(0, 0, "Current:", Red);
+        sprintf((char *)str, "%d", (int32_t)(ADC_CurrentValue+10));
+        Display_String(64, 0, str, Green);
+        Display_String(112, 0, "mA", Blue);
+        Clear_Screen(1);
+        Display_String(0, 16, "Volt:", Red);
+        sprintf((char *)str, "%.1f", Volt_Result);
+        Display_String(64, 16, str, Green);
+        Display_String(112, 16, "mV", Blue); 
+        }            
     }    
 }
 
