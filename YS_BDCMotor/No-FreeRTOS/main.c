@@ -104,11 +104,11 @@ int main(void)
 	/*Configure the SysTick to have interrupt in 1ms time basis*/
 	//in the file system_stm3210x.c, configure the SystemCoreClock
         /* #define SYSCLK_FREQ_HSE    HSE_VALUE */
-        /* #define SYSCLK_FREQ_24MHz  24000000 */ 
+        /* #define SYSCLK_FREQ_24MHz  24000000 */
         /* #define SYSCLK_FREQ_36MHz  36000000 */
         /* #define SYSCLK_FREQ_48MHz  48000000 */
         /* #define SYSCLK_FREQ_56MHz  56000000 */
-        /* #define SYSCLK_FREQ_72MHz  72000000 */    
+        /* #define SYSCLK_FREQ_72MHz  72000000 */
     SysTick_Config(SystemCoreClock/1000);
     
     /*³õÊ¼»¯LED¶Ë¿Ú*/

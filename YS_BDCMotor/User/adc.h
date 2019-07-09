@@ -23,6 +23,17 @@
 #define ADCx_DMA_IRQx_Handler            DMA1_Channel1_IRQHandler
 
 
+//PC1-ADC1_IN11 电压检测
+#define ADC_VOLT_GPIO_RCC                 RCC_APB2Periph_GPIOC
+#define ADC_VOLT_GPIO                     GPIOC
+#define ADC_VOLT_GPIO_PIN                 GPIO_Pin_1
+#define ADC_VOLT_CHANNEL                  ADC_Channel_11
+
+#define ADC_OVP_IRQx                      ADC1_2_IRQn
+#define ADC_OVP_IRQHandler                ADC1_2_IRQHandler
+
+
+
 #define ADC_Base      10//9                         // 取2的整数倍作为缓存区大小,得到14bits的ADC值
 /* 使用DMA传输数据,采集n个数据点的时间是0.65ms,采样率大约是 1500 KHz */
 #define ADC_BUFFER    1024//512                       // 采样数据缓存区
@@ -40,6 +51,13 @@
 #define VOLTBUS_RESOLUTION  ((float)( 3.3f/(float)4096) * (80.4f+3.9f) / 3.9f)  //总线电压值分辨率从,分压电阻:80.4kΩ/3.9kΩ
   
 
+/* 总线电压参数相关 */
+#define VOLT_MAX                         60.0f // 最大电压值
+#define VOLT_MIN                         12.0f
+
+/* 总线分压电阻:3.9 kΩ,80.4 kΩ */
+#define VOLT_LIMIT_MAX                   (int32_t)((((VOLT_MAX * 3.9f) / (3.9f+80.4f) ) /3.3f) *4096.0f) // 3445
+#define VOLT_LIMIT_MIN                   (int32_t)((((VOLT_MIN * 3.9f) / (3.9f+80.4f) ) /3.3f) *4096.0f)
 
 
 void ADC_CUR_GPIO_Init(void);
