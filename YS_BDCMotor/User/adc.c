@@ -9,6 +9,7 @@ extern __IO uint32_t uwTick;
 
 // 用于保存转换计算后的数值
 __IO float ADC_CurrentValue;
+__IO float ADC_VoltBus;
 // AD转换结果值
 __IO int16_t ADC_ConvValueHex[ADC_BUFFER];   // AD转换结果
 __IO int32_t ADC_Resul= 0;
@@ -27,6 +28,10 @@ void ADC_CUR_GPIO_Init(void)
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(ADC_CUR_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO
+    
+    /*PC1*/
+    GPIO_InitStructure.GPIO_Pin = ADC_VOLT_GPIO_PIN;
+    GPIO_Init(ADC_VOLT_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO    
 }
 
 void ADC_CUR_Init(void)
@@ -46,6 +51,12 @@ void ADC_CUR_Init(void)
     
     /* 配置电流采样通道 */
     ADC_RegularChannelConfig(ADCx, ADC_CURRENT_CHANNEL, 1, ADC_SampleTime_13Cycles5);
+    
+    /* 配置总线电压采集 */
+    ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
+    //ADC_ITConfig(ADCx, uint16_t ADC_IT, ENABLE);
+    NVIC_SetPriority(ADC_OVP_IRQx, 0);
+    NVIC_EnableIRQ(ADC_OVP_IRQx);
 }
 
 void ADC_DMA_Init(void)
@@ -225,7 +236,17 @@ void ADCx_DMA_IRQx_Handler(void)
     }
 }
 
+void ADC_OVP_IRQHandler(void)
+{
+  /* USER CODE BEGIN ADC1_2_IRQn 0 */
+  /* USER CODE END ADC1_2_IRQn 0 */
+   /* 读取总线电压值 */
+  ADC_VoltBus = ADCx->DR;
+  //HAL_ADC_IRQHandler(&hadcx);
+  /* USER CODE BEGIN ADC1_2_IRQn 1 */
 
+  /* USER CODE END ADC1_2_IRQn 1 */
+}
 
 
 
