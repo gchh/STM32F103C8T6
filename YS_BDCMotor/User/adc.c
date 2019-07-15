@@ -112,7 +112,7 @@ void ADC_DMA_Init(void)
     DMA_Init(DMAx_CHANNEL_x, &DMA_InitStructor);
     
     /* 外设中断优先级配置和使能中断 */
-    NVIC_SetPriority(ADCx_DMA_IRQx, 0);
+    NVIC_SetPriority(ADCx_DMA_IRQx, 1);
     NVIC_EnableIRQ(ADCx_DMA_IRQx);
 }
 
@@ -199,7 +199,8 @@ void ADC_Start_DMA(void)
     /* Enable the transfer complete interrupt */
     /* Enable the Half transfer complete interrupt */
     /* Enable the transfer Error interrupt */
-    DMA_ITConfig(DMAx_CHANNEL_x, DMA_IT_TC | DMA_IT_HT | DMA_IT_TE, ENABLE);
+    //DMA_ITConfig(DMAx_CHANNEL_x, DMA_IT_TC | DMA_IT_HT | DMA_IT_TE, ENABLE);
+    DMA_ITConfig(DMAx_CHANNEL_x, DMA_IT_TC, ENABLE);
     
     /* Enable the Peripheral */
     DMA_Cmd(DMAx_CHANNEL_x, ENABLE);    

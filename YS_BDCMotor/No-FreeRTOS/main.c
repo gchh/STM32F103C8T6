@@ -295,7 +295,7 @@ void SYSTICK_Callback(void)
         /* 直接使用串口助手打印电流电压值 */
         if((uwTick % 1000) == 0)
         {
-        printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
+        printf("BUS Volt: %.1f mv -- Volt: %.1f mV -- Curr: %d mA\n",ADC_VoltBus,Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
 
         Clear_Screen(0);
         Display_String(0, 0, "Current:", Red);
