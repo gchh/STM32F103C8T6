@@ -130,7 +130,9 @@ int main(void)
 
     /* ADC-DMA 初始化 */
     ADC_CUR_GPIO_Init();
+    ADC_VOLT_GPIO_Init();
     ADC_CUR_Init();
+    ADC_VOLT_Init();
     ADC_DMA_Init();
     /* 启动AD转换并使能DMA传输和中断 */
     ADC_Start_DMA();
@@ -310,4 +312,28 @@ void SYSTICK_Callback(void)
 }
 
 
-
+/**
+  * 函数功能: ADC看门狗中断回调函数
+  * 输入参数: ADC句柄
+  * 返 回 值: 无
+  * 说    明: ADC窗口看门狗,检测到电压过低或者过高的时候就调用这个函数,停止输出.
+  */
+void ADC_LevelOutOfWindowCallback(void)
+{
+    /* 使能电机控制引脚 */
+    static uint8_t i = 0;
+    i++;
+    if(ADC_VoltBus > VOLT_LIMIT_MIN  && ADC_VoltBus < VOLT_LIMIT_MAX)
+        i = 0 ;
+    else if(i>=6)
+    {
+        SHUTDOWN_ON;
+        SetMotorStop();
+        PWM_Duty = 0;
+//    ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;// ADC_VoltBus是在中断响应函数中读取的adc值
+     
+        printf("Bus Voltage is out of range!!\n");
+        printf("Please Reset the Target!\n");
+        while(1);
+    }
+}

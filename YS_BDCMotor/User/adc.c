@@ -27,10 +27,20 @@ void ADC_CUR_GPIO_Init(void)
     GPIO_InitStructure.GPIO_Pin = ADC_CUR_GPIO_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
     GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
-    GPIO_Init(ADC_CUR_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO
+    GPIO_Init(ADC_CUR_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO 
+}
+
+void ADC_VOLT_GPIO_Init(void)
+{
+    //定义一个GPIO_InitTypeDef 类型的结构体
+    GPIO_InitTypeDef  GPIO_InitStructure;	
+
+    RCC_APB2PeriphClockCmd(ADC_VOLT_GPIO_RCC, ENABLE);//使能外设时钟
     
     /*PC1*/
     GPIO_InitStructure.GPIO_Pin = ADC_VOLT_GPIO_PIN;
+    GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
+    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
     GPIO_Init(ADC_VOLT_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO    
 }
 
@@ -51,10 +61,32 @@ void ADC_CUR_Init(void)
     
     /* 配置电流采样通道 */
     ADC_RegularChannelConfig(ADCx, ADC_CURRENT_CHANNEL, 1, ADC_SampleTime_13Cycles5);
+}
+
+void ADC_VOLT_Init(void)
+{
+    ADC_InitTypeDef ADC_InitStructure;
+    
+    RCC_APB2PeriphClockCmd(ADCx_RCC, ENABLE);//使能外设时钟
+    
+    //ADC1
+    ADC_InitStructure.ADC_Mode = ADC_Mode_Independent; //独立模式
+    ADC_InitStructure.ADC_ContinuousConvMode = ENABLE; //连续转换模式使能
+    ADC_InitStructure.ADC_ScanConvMode = DISABLE; //扫描模式关闭
+    ADC_InitStructure.ADC_DataAlign = ADC_DataAlign_Right; //数据右对齐
+    ADC_InitStructure.ADC_ExternalTrigConv = ADC_ExternalTrigConv_None; //软件触发
+    ADC_InitStructure.ADC_NbrOfChannel = 1; //转换通道数量
+    ADC_Init(ADCx, &ADC_InitStructure);
     
     /* 配置总线电压采集 */
+    /* 模拟看门狗配置 */
+    ADC_AnalogWatchdogThresholdsConfig(ADCx, VOLT_LIMIT_MAX, VOLT_LIMIT_MIN);
+    ADC_AnalogWatchdogSingleChannelConfig(ADCx, ADC_VOLT_CHANNEL);
+    ADC_AnalogWatchdogCmd(ADCx, ADC_AnalogWatchdog_SingleRegEnable);
+    ADC_ITConfig(ADCx, ADC_IT_AWD, ENABLE);
+    
     ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
-    //ADC_ITConfig(ADCx, uint16_t ADC_IT, ENABLE);
+    
     NVIC_SetPriority(ADC_OVP_IRQx, 0);
     NVIC_EnableIRQ(ADC_OVP_IRQx);
 }
@@ -173,6 +205,29 @@ void ADC_Start_DMA(void)
     DMA_Cmd(DMAx_CHANNEL_x, ENABLE);    
 }
 
+/*
+  * 函数功能: 设置AD转换通道的转换顺序为1
+  * 输入参数: hadc ADC句柄 , Channel可以是ADC_VOLT_CHANNEL,ADC_CURRENT_CHANNEL
+  * 返 回 值: 无
+  * 说    明: 无
+  */
+void SetChannelAsRank1(uint32_t Channel)
+{
+    if(Channel == ADC_VOLT_CHANNEL)
+    {
+        /* 配置电压通道 */
+        ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 1, ADC_SampleTime_13Cycles5);
+        /* 配置电流通道 */
+        ADC_RegularChannelConfig(ADCx, ADC_CURRENT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
+    }
+    else
+    {
+        /* 配置电流通道 */
+        ADC_RegularChannelConfig(ADCx, ADC_CURRENT_CHANNEL, 1, ADC_SampleTime_13Cycles5);
+        /* 配置电压通道 */
+        ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
+    }
+}
 
 void ADCx_DMA_IRQx_Handler(void)
 {
@@ -217,7 +272,12 @@ void ADCx_DMA_IRQx_Handler(void)
         ADC_SoftwareStartConvCmd(ADCx, DISABLE);
         DMA_Cmd(DMAx_CHANNEL_x, DISABLE);
         while( (DMAx_CHANNEL_x->CCR & DMA_CCR1_EN) != RESET );
-
+        /* 采集总线电压 */
+        SetChannelAsRank1(ADC_VOLT_CHANNEL);
+        ADC_Cmd(ADCx, ENABLE);
+        while( (ADCx->CR2 & ADC_CR2_ADON) == RESET );
+        
+        
         /* 取平均 */
         for(ConvCnt = 0; ConvCnt < ADC_BUFFER; ConvCnt++)
         {
@@ -226,6 +286,10 @@ void ADCx_DMA_IRQx_Handler(void)
         /* 采样数据设置为2的整数倍 */
         ADC_Resul = ADConv>>ADC_Base;
 
+        
+        ADC_Cmd(ADCx, DISABLE);
+        while( (ADCx->CR2 & ADC_CR2_ADON) != RESET );
+        SetChannelAsRank1(ADC_CURRENT_CHANNEL);
         /* 重新开启DMA 采集电流 */
         ADC_Cmd(ADCx, ENABLE);
         while( (ADCx->CR2 & ADC_CR2_ADON) == RESET );
@@ -236,16 +300,18 @@ void ADCx_DMA_IRQx_Handler(void)
     }
 }
 
+extern void ADC_LevelOutOfWindowCallback(void);
 void ADC_OVP_IRQHandler(void)
 {
-  /* USER CODE BEGIN ADC1_2_IRQn 0 */
-  /* USER CODE END ADC1_2_IRQn 0 */
-   /* 读取总线电压值 */
-  ADC_VoltBus = ADCx->DR;
-  //HAL_ADC_IRQHandler(&hadcx);
-  /* USER CODE BEGIN ADC1_2_IRQn 1 */
-
-  /* USER CODE END ADC1_2_IRQn 1 */
+    /* 读取总线电压值 */
+    ADC_VoltBus = ADCx->DR;
+    /* Check Analog watchdog flag */
+    //ADC窗口看门狗,检测到电压过低或者过高的时候,停止输出.  
+    if( ADC_GetITStatus(ADCx, ADC_IT_AWD) != RESET)
+    {
+        ADC_LevelOutOfWindowCallback();
+        ADC_ClearITPendingBit(ADCx, ADC_IT_AWD);
+    }
 }
 
 

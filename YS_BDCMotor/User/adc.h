@@ -61,7 +61,9 @@
 
 
 void ADC_CUR_GPIO_Init(void);
+void ADC_VOLT_GPIO_Init(void);
 void ADC_CUR_Init(void);
+void ADC_VOLT_Init(void);
 void ADC_DMA_Init(void);
 void ADC_Start_DMA(void);
 
@@ -69,6 +71,6 @@ extern __IO float ADC_CurrentValue;
 extern __IO int32_t ADC_Resul;
 extern __IO uint32_t OffsetCnt_Flag;
 extern __IO  int32_t OffSetHex ;             // Æ«²îÖµ
-
+extern __IO float ADC_VoltBus;
 
 #endif
