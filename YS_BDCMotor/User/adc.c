@@ -26,7 +26,7 @@ void ADC_CUR_GPIO_Init(void)
     /*PC0*/
     GPIO_InitStructure.GPIO_Pin = ADC_CUR_GPIO_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
+    //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;
     GPIO_Init(ADC_CUR_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO 
 }
 
@@ -40,7 +40,7 @@ void ADC_VOLT_GPIO_Init(void)
     /*PC1*/
     GPIO_InitStructure.GPIO_Pin = ADC_VOLT_GPIO_PIN;
     GPIO_InitStructure.GPIO_Mode = GPIO_Mode_AIN;
-    GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
+    //GPIO_InitStructure.GPIO_Speed = GPIO_Speed_50MHz;    
     GPIO_Init(ADC_VOLT_GPIO, &GPIO_InitStructure);//调用库函数，初始化GPIO    
 }
 
@@ -277,6 +277,7 @@ void ADCx_DMA_IRQx_Handler(void)
         SetChannelAsRank1(ADC_VOLT_CHANNEL);
         ADC_Cmd(ADCx, ENABLE);
         while( (ADCx->CR2 & ADC_CR2_ADON) == RESET );
+        ADC_SoftwareStartConvCmd(ADCx, ENABLE);
         
         
         /* 取平均 */
@@ -286,10 +287,11 @@ void ADCx_DMA_IRQx_Handler(void)
         }
         /* 采样数据设置为2的整数倍 */
         ADC_Resul = ADConv>>ADC_Base;
-
+        
         
         ADC_Cmd(ADCx, DISABLE);
         while( (ADCx->CR2 & ADC_CR2_ADON) != RESET );
+        ADC_SoftwareStartConvCmd(ADCx, DISABLE);
         SetChannelAsRank1(ADC_CURRENT_CHANNEL);
         /* 重新开启DMA 采集电流 */
         ADC_Cmd(ADCx, ENABLE);
