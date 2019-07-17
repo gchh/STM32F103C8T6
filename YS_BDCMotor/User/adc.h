@@ -34,7 +34,7 @@
 
 
 
-#define ADC_Base      10//9                         // 取2的整数倍作为缓存区大小,得到14bits的ADC值
+#define ADC_Base      8//10//9                         // 取2的整数倍作为缓存区大小,得到14bits的ADC值
 /* 使用DMA传输数据,采集n个数据点的时间是0.65ms,采样率大约是 1500 KHz */
 #define ADC_BUFFER    1024//512                       // 采样数据缓存区
 
@@ -57,7 +57,7 @@
 
 /* 总线分压电阻:3.9 kΩ,80.4 kΩ */
 #define VOLT_LIMIT_MAX                   (int32_t)((((VOLT_MAX * 3.9f) / (3.9f+80.4f) ) /3.3f) *4096.0f) // 3445
-#define VOLT_LIMIT_MIN                   (int32_t)((((VOLT_MIN * 3.9f) / (3.9f+80.4f) ) /3.3f) *4096.0f)
+#define VOLT_LIMIT_MIN                   (int32_t)((((VOLT_MIN * 3.9f) / (3.9f+80.4f) ) /3.3f) *4096.0f) // 689
 
 
 void ADC_CUR_GPIO_Init(void);
@@ -72,5 +72,6 @@ extern __IO int32_t ADC_Resul;
 extern __IO uint32_t OffsetCnt_Flag;
 extern __IO  int32_t OffSetHex ;             // 偏差值
 extern __IO float ADC_VoltBus;
-
+extern __IO int32_t AverSum;                   // 平均值的累加值
+extern __IO int32_t AverCnt;
 #endif

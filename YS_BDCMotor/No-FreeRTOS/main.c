@@ -292,10 +292,16 @@ void SYSTICK_Callback(void)
         /* 计算电压值和电流值 */
         Volt_Result = ( (float)( (float)(ADC_Resul) * VOLT_RESOLUTION) );
         ADC_CurrentValue = (float)( (Volt_Result / GAIN) / SAMPLING_RES);
+        /* 清空计数 */
+        AverCnt = 0;
+        AverSum = 0;        
+        
         /* 直接使用串口助手打印电流电压值 */
         if((uwTick % 1000) == 0)
         {
-        printf("BUS Volt: %.1f mv -- Volt: %.1f mV -- Curr: %d mA\n",ADC_VoltBus,Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
+        ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;
+        printf("BUSVolt: %dV\n",(int32_t)ADC_VoltBus);            
+        printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
 
         Clear_Screen(0);
         Display_String(0, 0, "Current:", Red);
@@ -324,14 +330,16 @@ void ADC_LevelOutOfWindowCallback(void)
     static uint8_t i = 0;
     i++;
     if(ADC_VoltBus > VOLT_LIMIT_MIN  && ADC_VoltBus < VOLT_LIMIT_MAX)
+    {
         i = 0 ;
+    }
     else if(i>=6)
     {
         SHUTDOWN_ON;
         SetMotorStop();
         PWM_Duty = 0;
-//    ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;// ADC_VoltBus是在中断响应函数中读取的adc值
-     
+//        ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;// ADC_VoltBus是在中断响应函数中读取的adc值
+        
         printf("Bus Voltage is out of range!!\n");
         printf("Please Reset the Target!\n");
         while(1);

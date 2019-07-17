@@ -15,6 +15,8 @@ __IO int16_t ADC_ConvValueHex[ADC_BUFFER];   // AD转换结果
 __IO int32_t ADC_Resul= 0;
 __IO uint32_t OffsetCnt_Flag = 0 ;           // 偏差值的计数器标志
 __IO int32_t OffSetHex= 0;             // 偏差值
+__IO int32_t AverSum = 0;                   // 平均值的累加值
+__IO int32_t AverCnt = 0;                   // 平均值的计数器
 
 void ADC_CUR_GPIO_Init(void)
 {
@@ -287,7 +289,14 @@ void ADCx_DMA_IRQx_Handler(void)
         }
         /* 采样数据设置为2的整数倍 */
         ADC_Resul = ADConv>>ADC_Base;
+        /* 累加采样结果并记录采样次数*/
+        AverSum += ADConv;
+        AverCnt++;        
         
+        
+        /* 读取总线电压值 */
+        //while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
+        //ADC_VoltBus = ADCx->DR;
         
         ADC_Cmd(ADCx, DISABLE);
         while( (ADCx->CR2 & ADC_CR2_ADON) != RESET );
@@ -307,7 +316,11 @@ extern void ADC_LevelOutOfWindowCallback(void);
 void ADC_OVP_IRQHandler(void)
 {
     /* 读取总线电压值 */
-    ADC_VoltBus = ADCx->DR;
+    while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
+    //if( ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) != RESET)
+    //{
+        ADC_VoltBus = ADCx->DR;
+    //}
     /* Check Analog watchdog flag */
     //ADC窗口看门狗,检测到电压过低或者过高的时候,停止输出.  
     if( ADC_GetITStatus(ADCx, ADC_IT_AWD) != RESET)
