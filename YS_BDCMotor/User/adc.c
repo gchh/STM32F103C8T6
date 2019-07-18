@@ -82,15 +82,15 @@ void ADC_VOLT_Init(void)
     
     /* 配置总线电压采集 */
     /* 模拟看门狗配置 */
-    ADC_AnalogWatchdogThresholdsConfig(ADCx, VOLT_LIMIT_MAX, VOLT_LIMIT_MIN);
-    ADC_AnalogWatchdogSingleChannelConfig(ADCx, ADC_VOLT_CHANNEL);
-    ADC_AnalogWatchdogCmd(ADCx, ADC_AnalogWatchdog_SingleRegEnable);
-    ADC_ITConfig(ADCx, ADC_IT_AWD, ENABLE);
+//    ADC_AnalogWatchdogThresholdsConfig(ADCx, VOLT_LIMIT_MAX, VOLT_LIMIT_MIN);
+//    ADC_AnalogWatchdogSingleChannelConfig(ADCx, ADC_VOLT_CHANNEL);
+//    ADC_AnalogWatchdogCmd(ADCx, ADC_AnalogWatchdog_SingleRegEnable);
+//    ADC_ITConfig(ADCx, ADC_IT_AWD, ENABLE);
     
     ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
-    
-    NVIC_SetPriority(ADC_OVP_IRQx, 0);
-    NVIC_EnableIRQ(ADC_OVP_IRQx);
+
+//    NVIC_SetPriority(ADC_OVP_IRQx, 0);
+//    NVIC_EnableIRQ(ADC_OVP_IRQx);
 }
 
 void ADC_DMA_Init(void)
@@ -129,14 +129,14 @@ void ADC_Calibration(void)
     if(ADCx->CR2 & ADC_CR2_ADON) //ADC已开启转换，校准前先关闭
     {
         ADC_Cmd(ADCx, DISABLE);
-        tickstart = uwTick;
+//        tickstart = uwTick;
         //等待ADC停止
         while( (ADCx->CR2 & ADC_CR2_ADON) != RESET )
         {
-            if((uwTick - tickstart) > ADC_DISABLE_TIMEOUT)
-            {
-                adc_error=0X01;
-            }            
+//            if((uwTick - tickstart) > ADC_DISABLE_TIMEOUT)
+//            {
+//                adc_error=0X01;
+//            }            
         }
     }
     if(adc_error==0)
@@ -155,42 +155,42 @@ void ADC_Calibration(void)
         {
             ADC_Cmd(ADCx, ENABLE);
             //等待ADC稳定
-            wait_loop_index = (ADC_STAB_DELAY_US * (SystemCoreClock / 1000000));
-            while(wait_loop_index != 0)
-            {
-              wait_loop_index--;
-            }            
-            tickstart = uwTick;
+//            wait_loop_index = (ADC_STAB_DELAY_US * (SystemCoreClock / 1000000));
+//            while(wait_loop_index != 0)
+//            {
+//              wait_loop_index--;
+//            }            
+//            tickstart = uwTick;
             //等待ADC开启
             while( (ADCx->CR2 & ADC_CR2_ADON) == RESET )
             {
-                if((uwTick - tickstart) > ADC_ENABLE_TIMEOUT)
-                {
-                    adc_error=0X02;
-                }
+//                if((uwTick - tickstart) > ADC_ENABLE_TIMEOUT)
+//                {
+//                    adc_error=0X02;
+//                }
             }
         }
         
         /* 3. Resets ADC calibration registers */  
         ADC_ResetCalibration(ADCx);
-        tickstart = uwTick;
+//        tickstart = uwTick;
         while( ADC_GetResetCalibrationStatus(ADCx) == SET )
         {
-            if((uwTick - tickstart) > ADC_CALIBRATION_TIMEOUT)
-            {
-                adc_error=0X04;
-            }            
+//            if((uwTick - tickstart) > ADC_CALIBRATION_TIMEOUT)
+//            {
+//                adc_error=0X04;
+//            }            
         }
         
         /* 4. Start ADC calibration */
         ADC_StartCalibration(ADCx);
-        tickstart = uwTick;
+//        tickstart = uwTick;
         while( ADC_GetCalibrationStatus(ADCx) == SET )
         {
-            if((uwTick - tickstart) > ADC_CALIBRATION_TIMEOUT)
-            {
-                adc_error=0X08;
-            }             
+//            if((uwTick - tickstart) > ADC_CALIBRATION_TIMEOUT)
+//            {
+//                adc_error=0X08;
+//            }             
         }
     }        
 }
@@ -298,8 +298,9 @@ void ADCx_DMA_IRQx_Handler(void)
         
         
         /* 读取总线电压值 */
-        //while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
-        //ADC_VoltBus = ADCx->DR;
+        while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
+        ADC_VoltBus = ADCx->DR;
+        ADC_ClearFlag(ADCx, ADC_FLAG_EOC);
         
         ADC_Cmd(ADCx, DISABLE);
         while( (ADCx->CR2 & ADC_CR2_ADON) != RESET );
@@ -319,10 +320,11 @@ extern void ADC_LevelOutOfWindowCallback(void);
 void ADC_OVP_IRQHandler(void)
 {
     /* 读取总线电压值 */
-    while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
-    //if( ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) != RESET)
+    //while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
+    //if( ADC_GetITStatus(ADCx, ADC_IT_EOC) != RESET)
     //{
         ADC_VoltBus = ADCx->DR;
+    //    ADC_ClearITPendingBit(ADCx, ADC_IT_EOC);
     //}
     /* Check Analog watchdog flag */
     //ADC窗口看门狗,检测到电压过低或者过高的时候,停止输出.  

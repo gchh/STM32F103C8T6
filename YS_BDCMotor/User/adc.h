@@ -39,7 +39,7 @@
 #define ADC_BUFFER    1024//512                       // 采样数据缓存区
 
 
-#define VOLT_REF      3.307f                    // ADC参考电压.理论值是3.3V,通过实际测量得到3.307V
+#define VOLT_REF      3.25f//3.307f                    // ADC参考电压.理论值是3.3V,通过实际测量得到3.307V
 /* 根据驱动板设置放大倍数 和 采样电阻 */
 #define GAIN          7.02f                     // 放大倍数
 #define SAMPLING_RES  0.02f                     // 采样电阻R020

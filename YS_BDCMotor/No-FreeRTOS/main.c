@@ -296,7 +296,7 @@ void SYSTICK_Callback(void)
         /* 清空计数 */
         AverCnt = 0;
         AverSum = 0;        
-        
+   
         /* 直接使用串口助手打印电流电压值 */
         if((uwTick % 1000) == 0)
         {
