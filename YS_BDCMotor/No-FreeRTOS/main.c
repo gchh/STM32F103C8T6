@@ -134,6 +134,7 @@ int main(void)
     ADC_CUR_Init();
     ADC_VOLT_Init();
     ADC_DMA_Init();
+    ADC_Calibration();
     /* 启动AD转换并使能DMA传输和中断 */
     ADC_Start_DMA();
   

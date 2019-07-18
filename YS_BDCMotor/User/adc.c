@@ -118,7 +118,7 @@ void ADC_DMA_Init(void)
     NVIC_EnableIRQ(ADCx_DMA_IRQx);
 }
 
-void ADC_Start_DMA(void)
+void ADC_Calibration(void)
 {
     uint32_t tickstart = 0, adc_error = 0;
     __IO uint32_t wait_loop_index = 0;
@@ -192,8 +192,11 @@ void ADC_Start_DMA(void)
                 adc_error=0X08;
             }             
         }
-    }    
-    
+    }        
+}
+
+void ADC_Start_DMA(void)
+{  
     ADC_DMACmd(ADCx, ENABLE);
     
     ADC_SoftwareStartConvCmd(ADCx, ENABLE);

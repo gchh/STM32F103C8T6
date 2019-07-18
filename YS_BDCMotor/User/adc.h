@@ -65,6 +65,7 @@ void ADC_VOLT_GPIO_Init(void);
 void ADC_CUR_Init(void);
 void ADC_VOLT_Init(void);
 void ADC_DMA_Init(void);
+void ADC_Calibration(void);
 void ADC_Start_DMA(void);
 
 extern __IO float ADC_CurrentValue;
