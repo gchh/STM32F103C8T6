@@ -39,7 +39,7 @@
 #define ADC_BUFFER    1024//512                       // 采样数据缓存区
 
 
-#define VOLT_REF      3.25f//3.307f                    // ADC参考电压.理论值是3.3V,通过实际测量得到3.307V
+#define VOLT_REF      3.315f//3.25f//3.307f                    // ADC参考电压.理论值是3.3V,通过实际测量得到3.307V
 /* 根据驱动板设置放大倍数 和 采样电阻 */
 #define GAIN          7.02f                     // 放大倍数
 #define SAMPLING_RES  0.02f                     // 采样电阻R020
@@ -47,7 +47,7 @@
 /** 电压分辨率 =  ADC(Hex) * 3.3 / 2^n * 1000(mV) 单位是mV
   * STM32的ADC分辨率是n = 12bit,4096
   */
-#define VOLT_RESOLUTION     ((float)((VOLT_REF/(float)(4096))*(float)1000)) // ADC 电压分辨率,单位:mV
+#define VOLT_RESOLUTION     ((float)((VOLT_REF/(float)(16384))*(float)1000)) //((float)((VOLT_REF/(float)(4096))*(float)1000)) // ADC 电压分辨率,单位:mV
 #define VOLTBUS_RESOLUTION  ((float)( 3.3f/(float)4096) * (80.4f+3.9f) / 3.9f)  //总线电压值分辨率从,分压电阻:80.4kΩ/3.9kΩ
   
 

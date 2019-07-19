@@ -263,11 +263,11 @@ void SYSTICK_Callback(void)
             Speed = (float)CaptureNumber/PPR;
             printf("电机实际转动速度%0.2f r/s \r\n",Speed);
 
-            Clear_Screen(2);
-            Display_String(0, 32, "Speed:", Red);
+            Clear_Screen(3);
+            Display_String(0, 48, "Speed:", Red);
             sprintf((char *)str, "%0.2f", Speed);
-            Display_String(64, 32, str, Green);//
-            Display_String(104, 32, "r/s", Blue);
+            Display_String(64, 48, str, Green);//
+            Display_String(104, 48, "r/s", Blue);
         
             if(Speed==0)start_flag = 0;
             OverflowCount = 0;
@@ -279,6 +279,7 @@ void SYSTICK_Callback(void)
     /* 数据反馈周期是50ms,由于电流采集周期大约是 2ms,所以数据反馈周期最好不要低于2ms */
     if((uwTick % 50) == 0)//((uwTick % 50) == 0&&OffsetCnt_Flag<32 || (uwTick % 500) == 0&&OffsetCnt_Flag>=32)//
     {
+        ADC_Resul = AverSum/AverCnt;
         /* 连续采样16次以后,以第17次作为校准偏差值 */
         OffsetCnt_Flag++;
         if(OffsetCnt_Flag >= 16)
@@ -301,7 +302,7 @@ void SYSTICK_Callback(void)
         if((uwTick % 1000) == 0)
         {
         ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;
-        printf("BUSVolt: %dV\n",(int32_t)ADC_VoltBus);            
+        printf("BUSVolt: %.2fV\n", ADC_VoltBus);            
         printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
 
         Clear_Screen(0);
@@ -309,11 +310,18 @@ void SYSTICK_Callback(void)
         sprintf((char *)str, "%d", (int32_t)(ADC_CurrentValue+10));
         Display_String(64, 0, str, Green);
         Display_String(112, 0, "mA", Blue);
+            
         Clear_Screen(1);
         Display_String(0, 16, "Volt:", Red);
         sprintf((char *)str, "%.1f", Volt_Result);
         Display_String(64, 16, str, Green);
         Display_String(112, 16, "mV", Blue); 
+            
+        Clear_Screen(2);
+        Display_String(0, 32, "BusVolt:", Red);
+        sprintf((char *)str, "%.2f", ADC_VoltBus);
+        Display_String(64, 32, str, Green);
+        Display_String(120, 32, "V", Blue);             
         }            
     }    
 }

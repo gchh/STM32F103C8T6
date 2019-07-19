@@ -82,15 +82,15 @@ void ADC_VOLT_Init(void)
     
     /* 配置总线电压采集 */
     /* 模拟看门狗配置 */
-//    ADC_AnalogWatchdogThresholdsConfig(ADCx, VOLT_LIMIT_MAX, VOLT_LIMIT_MIN);
-//    ADC_AnalogWatchdogSingleChannelConfig(ADCx, ADC_VOLT_CHANNEL);
-//    ADC_AnalogWatchdogCmd(ADCx, ADC_AnalogWatchdog_SingleRegEnable);
-//    ADC_ITConfig(ADCx, ADC_IT_AWD, ENABLE);
+    ADC_AnalogWatchdogThresholdsConfig(ADCx, VOLT_LIMIT_MAX, VOLT_LIMIT_MIN);
+    ADC_AnalogWatchdogSingleChannelConfig(ADCx, ADC_VOLT_CHANNEL);
+    ADC_AnalogWatchdogCmd(ADCx, ADC_AnalogWatchdog_SingleRegEnable);
+    ADC_ITConfig(ADCx, ADC_IT_AWD, ENABLE);
     
     ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
 
-//    NVIC_SetPriority(ADC_OVP_IRQx, 0);
-//    NVIC_EnableIRQ(ADC_OVP_IRQx);
+    NVIC_SetPriority(ADC_OVP_IRQx, 0);
+    NVIC_EnableIRQ(ADC_OVP_IRQx);
 }
 
 void ADC_DMA_Init(void)
@@ -234,11 +234,12 @@ void SetChannelAsRank1(uint32_t Channel)
         ADC_RegularChannelConfig(ADCx, ADC_VOLT_CHANNEL, 2, ADC_SampleTime_13Cycles5);
     }
 }
-
+__IO int32_t ADConv;
 void ADCx_DMA_IRQx_Handler(void)
 {
     __IO uint16_t ConvCnt = 0;
-    __IO int32_t ADConv = 0 ;
+    //__IO int32_t 
+    ADConv = 0 ;
 
     /* Transfer Error Interrupt management ***************************************/
     if( DMA_GetITStatus(DMA1_IT_TE1) != RESET )
@@ -291,7 +292,7 @@ void ADCx_DMA_IRQx_Handler(void)
             ADConv += ((int32_t)ADC_ConvValueHex[ConvCnt]);
         }
         /* 采样数据设置为2的整数倍 */
-        ADC_Resul = ADConv>>ADC_Base;
+        ADConv = ADConv>>ADC_Base;
         /* 累加采样结果并记录采样次数*/
         AverSum += ADConv;
         AverCnt++;        
@@ -323,7 +324,7 @@ void ADC_OVP_IRQHandler(void)
     //while(ADC_GetFlagStatus(ADCx, ADC_FLAG_EOC) == RESET);
     //if( ADC_GetITStatus(ADCx, ADC_IT_EOC) != RESET)
     //{
-        ADC_VoltBus = ADCx->DR;
+        //ADC_VoltBus = ADCx->DR;
     //    ADC_ClearITPendingBit(ADCx, ADC_IT_EOC);
     //}
     /* Check Analog watchdog flag */
