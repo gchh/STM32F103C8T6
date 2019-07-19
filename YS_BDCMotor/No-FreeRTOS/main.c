@@ -248,6 +248,7 @@ void SYSTICK_Callback(void)
 {
     unsigned char str[10];
     __IO float Volt_Result = 0;
+    __IO float Volt_Bus = 0;
     
     if(start_flag) // 等待脉冲输出后才开始计时
     {
@@ -302,6 +303,7 @@ void SYSTICK_Callback(void)
         if((uwTick % 1000) == 0)
         {
         ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;
+        Volt_Bus = ADC_VoltBus;
         printf("BUSVolt: %.2fV\n", ADC_VoltBus);            
         printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
 
@@ -319,7 +321,7 @@ void SYSTICK_Callback(void)
             
         Clear_Screen(2);
         Display_String(0, 32, "BusVolt:", Red);
-        sprintf((char *)str, "%.2f", ADC_VoltBus);
+        sprintf((char *)str, "%.2f", Volt_Bus);
         Display_String(64, 32, str, Green);
         Display_String(120, 32, "V", Blue);             
         }            
