@@ -60,6 +60,8 @@
 #define VOLT_LIMIT_MIN                   (int32_t)((((VOLT_MIN * 3.9f) / (3.9f+80.4f) ) /3.3f) *4096.0f) // 689
 
 
+#define CURRENT_MAX   400.0f // 最大电流值 400 mA
+
 void ADC_CUR_GPIO_Init(void);
 void ADC_VOLT_GPIO_Init(void);
 void ADC_CUR_Init(void);

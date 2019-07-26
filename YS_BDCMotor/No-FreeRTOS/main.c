@@ -244,6 +244,7 @@ void Key_process(void)
   * 说    明: 每发生一次滴答定时器中断进入该回调函数一次
   */
 extern __IO uint32_t uwTick;
+static __IO uint32_t OverCurCount;          // 过流次数记录
 void SYSTICK_Callback(void)
 {
     unsigned char str[10];
@@ -298,7 +299,27 @@ void SYSTICK_Callback(void)
         /* 清空计数 */
         AverCnt = 0;
         AverSum = 0;        
-   
+
+        /* 过流保护 */
+        if(OffsetCnt_Flag >= 32 )
+        {
+            if(ADC_CurrentValue >= CURRENT_MAX )
+            {
+                OverCurCount++;
+                if(OverCurCount >= 5)
+                {
+                    printf("Over Current %.2f \n",ADC_CurrentValue);
+                    printf("Please reset the target!!\n");
+                    SHUTDOWN_ON;
+                    SetMotorStop();
+                    PWM_Duty = 0;
+                    OverCurCount = 0;
+                    while(1);
+                }
+            }
+            else OverCurCount = 0;
+        }
+        
         /* 直接使用串口助手打印电流电压值 */
         if((uwTick % 1000) == 0)
         {
