@@ -137,6 +137,9 @@ int main(void)
     ADC_Calibration();
     /* 启动AD转换并使能DMA传输和中断 */
     ADC_Start_DMA();
+
+    /* PID 参数初始化 */
+    PID_ParamInit();
   
 #ifdef UART_CONTROL     
     //printf("*************************************************************\r\n");
@@ -245,6 +248,13 @@ void Key_process(void)
   */
 extern __IO uint32_t uwTick;
 static __IO uint32_t OverCurCount;          // 过流次数记录
+
+//for速度环
+__IO int32_t Spd_Pulse;           // 编码器捕获值 Pulse
+__IO int32_t LastSpd_Pulse;       // 编码器捕获值 Pulse
+__IO int32_t Spd_PPS;             // 速度值 Pulse/Sample
+__IO float Spd_RPM;               // 速度值 r/m
+__IO int32_t tmpPWM_Duty = 0;
 void SYSTICK_Callback(void)
 {
     unsigned char str[10];
@@ -252,7 +262,8 @@ void SYSTICK_Callback(void)
     __IO float Volt_Bus = 0;
     
     if(start_flag) // 等待脉冲输出后才开始计时
-    {     
+    {
+#if 0       
         time_count++;         // 每1ms自动增一
         if(time_count==1000)  // 1s
         {
@@ -276,10 +287,46 @@ void SYSTICK_Callback(void)
             TIM_SetCounter(ENCODER_TIMx, 0);
             time_count=0;
         }
+#endif
+        /* 速度环周期100ms */
+        if(uwTick % 100 == 0)
+        {
+            Spd_Pulse = ( int32_t )TIM_GetCounter(ENCODER_TIMx)+OverflowCount*65536;
+            Spd_PPS = Spd_Pulse - LastSpd_Pulse;
+            LastSpd_Pulse = Spd_Pulse;
+            /* 11线编码器,270减速比,一圈脉冲信号是11*270*4 = 11880 */
+            Spd_RPM = ((((float)Spd_PPS/(float)PPR)*10.0f)*(float)60);
+            
+            //tmpPWM_Duty = SpdPIDCalc(Spd_RPM);
+            //if(tmpPWM_Duty < 0) tmpPWM_Duty = -tmpPWM_Duty;
+      
+            /* 根据速度环的计算结果判断当前运动方向 */
+//            if(tmpPWM_Duty < 0)
+//            {
+//                Motor_Dir = CW;
+//                BDDCMOTOR_DIR_CW();
+//                tmpPWM_Duty = -tmpPWM_Duty;
+//            }
+//            else
+//            {
+//                Motor_Dir = CCW;
+//                BDDCMOTOR_DIR_CCW();
+//            }
+            /* 设定电流环的目标值,电流没有负数 */
+            //if(tmpPWM_Duty >= TARGET_CURRENT)
+            //    tmpPWM_Duty = TARGET_CURRENT;      
+            
+            Clear_Screen(3);
+            Display_String(0, 48, "Speed:", Red);
+            sprintf((char *)str, "%0.2f", Spd_RPM);
+            Display_String(64, 48, str, Green);//
+            Display_String(104, 48, "r/m", Blue);            
+        }
     }
     
     /* 数据反馈周期是50ms,由于电流采集周期大约是 2ms,所以数据反馈周期最好不要低于2ms */
-    if ((uwTick % 50) == 0)//((uwTick % 50) == 0&&OffsetCnt_Flag<32 || (uwTick % 500) == 0&&OffsetCnt_Flag>=32)//
+    //电流环周期是40ms
+    if((uwTick % 40) == 0)//((uwTick % 50) == 0)//((uwTick % 50) == 0&&OffsetCnt_Flag<32 || (uwTick % 500) == 0&&OffsetCnt_Flag>=32)//
     {
         ADC_Resul = AverSum/AverCnt;
         /* 连续采样16次以后,以第17次作为校准偏差值 */
@@ -296,11 +343,27 @@ void SYSTICK_Callback(void)
         /* 计算电压值和电流值 */
         Volt_Result = ( (float)( (float)(ADC_Resul) * VOLT_RESOLUTION) );
         ADC_CurrentValue = (float)( (Volt_Result / GAIN) / SAMPLING_RES);
-        //if(Volt_Result<0) Volt_Result = 0;        
+        if(Volt_Result<0) Volt_Result = 0;        
         /* 清空计数 */
         AverCnt = 0;
         AverSum = 0;        
 
+        /* 计算PID结果 */
+        if(0)//(start_flag == 1)
+        {  
+            cPID.SetPoint = tmpPWM_Duty ;
+            PWM_Duty = CurPIDCalc( (int32_t)ADC_CurrentValue);
+            if(PWM_Duty >= BDCMOTOR_DUTY_FULL) PWM_Duty = BDCMOTOR_DUTY_FULL;
+            if(PWM_Duty <=0) PWM_Duty = 0;
+            SetMotorSpeed(PWM_Duty);
+        }
+        
+        Clear_Screen(0);
+        Display_String(0, 0, "Current:", Red);
+        sprintf((char *)str, "%d", (int32_t)(ADC_CurrentValue+10));
+        Display_String(64, 0, str, Green);
+        Display_String(112, 0, "mA", Blue);
+        
         /* 过流保护 */
         if(OffsetCnt_Flag >= 32 )
         {
@@ -322,7 +385,7 @@ void SYSTICK_Callback(void)
         }
         
         /* 直接使用串口助手打印电流电压值 */
-        if ((uwTick % 1000) == 0)
+        if(0)//((uwTick % 1000) == 0)
         {
         ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;
         Volt_Bus = ADC_VoltBus;
