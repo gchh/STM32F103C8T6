@@ -41,11 +41,11 @@ void KEY_Scan(void)
     if(GPIO_ReadInputDataBit(KEY2_GPIO_PORT, KEY2_GPIO_PIN)==Bit_RESET)
         key_input = KEY_SPEED_DOWN;
     if(GPIO_ReadInputDataBit(KEY3_GPIO_PORT, KEY3_GPIO_PIN)==Bit_RESET)
-        key_input = KEY_TURN_Clockwise;
+        key_input = KEY_START;
     if(GPIO_ReadInputDataBit(KEY4_GPIO_PORT, KEY4_GPIO_PIN)==Bit_RESET)
-        key_input = KEY_TURN_Anticlockwise;
-    if(GPIO_ReadInputDataBit(KEY5_GPIO_PORT, KEY5_GPIO_PIN)==Bit_RESET)
-        key_input = KEY_SHUTDOWN;
+        key_input = KEY_STOP;
+    //if(GPIO_ReadInputDataBit(KEY5_GPIO_PORT, KEY5_GPIO_PIN)==Bit_RESET)
+    //    key_input = KEY_SHUTDOWN;
     
 	if(key_input>0&&key_input_last==key_input)
 	{

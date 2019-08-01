@@ -26,9 +26,9 @@
 #define KEY_NONE                    0
 #define KEY_SPEED_UP                1
 #define KEY_SPEED_DOWN              2
-#define KEY_TURN_Clockwise          3
-#define KEY_TURN_Anticlockwise      4
-#define KEY_SHUTDOWN                5
+#define KEY_START                   3
+#define KEY_STOP                    4
+//#define KEY_SHUTDOWN                5
 
 extern uint8_t key_id,key_id_done;
 

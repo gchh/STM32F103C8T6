@@ -8,7 +8,7 @@
 typedef struct 
 {
   __IO int32_t  SetPoint;       //设定目标 Desired Value
-  __IO float     SumError;      //误差累计
+  __IO float    SumError;      //误差累计
   __IO float    Proportion;     //比例常数 Proportional Const
   __IO float    Integral;       //积分常数 Integral Const
   __IO float    Derivative;     //微分常数 Derivative Const
@@ -31,6 +31,7 @@ typedef struct
 #define  SPD_I_DATA      0.5f    // I参数
 #define  SPD_D_DATA      0.0f    // D参数
 #define  TARGET_SPEED    10.0f   // 目标速度    10r/m
+#define  MAX_SPEED       380  // 空载满速380r/m
 
 extern PID_TypeDef  cPID,sPID;                     // PID参数结构体
 

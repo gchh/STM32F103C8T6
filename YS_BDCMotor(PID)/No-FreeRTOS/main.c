@@ -8,86 +8,14 @@
 /* 私有变量 ------------------------------------------------------------------*/
 __IO uint8_t  start_flag=0;
 __IO uint16_t time_count=0;        // 时间计数，每1ms增加一(与滴定时器频率有关)
-__IO int32_t CaptureNumber=0;      // 输入捕获数
 uint8_t timer_1ms;
+
+/* 四舍五入 */
+//将浮点数x四舍五入为int32_t
+#define ROUND_TO_INT32(x)   ((int32_t)(x)+0.5f)>=(x)? ((int32_t)(x)):((uint32_t)(x)+1) 
 
 void Key_process(void);
 
-#ifdef UART_CONTROL
-typedef struct {
-  __IO uint8_t IS_Enable ;  	// 电机旋转状态
-  __IO int16_t Duty_Cycles ;    // 电机占空比
-}MotorParam_TypeDef;
-MotorParam_TypeDef DCMotor_Param;
-
-/**
-  * 函数功能: 获取电机转动所需要的参数
-  * 输入参数: 无
-  * 返 回 值: 无
-  * 说    明: 无
-  */
-void Get_Para()
-{
-    __IO char ch = 0;
-    __IO int Num = 0;
-
-    printf("/*------ 直流有刷电机串口控制例程 -----*/\r\n");
-    printf("/*------ 输入电机转动参数:(以回车键结束)*/\r\n");
-    if(DCMotor_Param.IS_Enable==0)
-    {
-        //printf("      Y --> 启动      N --> 停止    \n");
-        printf("      Y --> 启动     \r\n");
-        scanf("%c",&ch);
-        printf("Your input is %c\r\n",ch);
-        /* 启动转动 */
-        if((ch=='y')||(ch=='Y'))
-        {
-            DCMotor_Param.IS_Enable = 1;
-            printf("Y--> 启动转动 \r\n");
-        }
-        //else if((ch=='n')||(ch=='N'))
-        //{
-        //    DCMotor_Param.IS_Enable = 0;
-        //    printf("N--> 停止转动 \r\n");
-        //    return ;
-        //}
-        else return;
-    }
-    else if(DCMotor_Param.IS_Enable==1)
-    {
-        printf("      N --> 停止    \r\n");
-        scanf("%c",&ch);
-        printf("Your input is %c\r\n",ch);
-        /* 停止转动 */
-        if((ch=='n')||(ch=='N'))
-        {
-            DCMotor_Param.IS_Enable = 0;
-            printf("N--> 停止转动 \r\n");
-            return ;
-        }
-        else return;
-    }
-    
-    /* 设置占空比 */
-    printf("\n------设置输出占空比 x(-400~400),正负代表转动方向,并以回车键结束 \r\n");
-    scanf("%d",&Num);
-    printf("Your input is %d\r\n",Num);
-    while((Num > (BDCMOTOR_TIM_PERIOD+1) || (Num <- (BDCMOTOR_TIM_PERIOD+1) )))
-    {
-        printf("\r\n --速度输入错误,请从新输入( -400~400 )\r\n");
-        scanf("%d",&Num);
-    }
-    DCMotor_Param.Duty_Cycles = Num;
-    printf(" 占空比设置为:%d/400 \r\n",DCMotor_Param.Duty_Cycles);
-
-    /* 电机参数一览 */
-    if(DCMotor_Param.IS_Enable)
-    {
-        printf(" 电机状态:启动转动 ------ 输出占空比:%.2f%% \r\n\n",
-                (float)DCMotor_Param.Duty_Cycles/(float)(BDCMOTOR_TIM_PERIOD+1)*100.0f);
-    }
-}
-#endif
 /**
   * @file   main
   * @brief  Main program.
@@ -115,10 +43,10 @@ int main(void)
     LED_GPIO_Config();
     
     KEY_GPIO_Init();
-#ifdef UART_CONTROL    
+    
+    /* 串口初始化 */
     USART_GPIO_Init();
     USART_Config();
-#endif
 
     /* 编码器初始化及使能编码器模式 */
     ENCODER_GPIO_Init();
@@ -140,58 +68,15 @@ int main(void)
 
     /* PID 参数初始化 */
     PID_ParamInit();
-  
-#ifdef UART_CONTROL     
-    //printf("*************************************************************\r\n");
-    //printf("*                                                           *\r\n");
-    //printf("* Thank you for using The Development Board Of BBDD ! ^_^ *\r\n");
-    //printf("*                                                           *\r\n");
-    //printf("*************************************************************\r\n");
-    printf("^^^^--请使用硬石上位机收发串口数据--^^^^\r\n");
-#endif
+    
     while(1)
-    {	    
-#ifdef UART_CONTROL 
-        //printf("/*------ please input one char:(end with Enter)*/\r\n");
-        //scanf("%c",&ch); 
-        //printf("Your input is %c\r\n",ch);
-        //scanf("%s",buff); 
-        //printf("Your input is %s\r\n",buff);
-        //scanf("%d",&ch); 
-        //printf("Your input is %d\r\n",ch);
-        //scanf("%f",&ft); 
-        //printf("Your input is %f\r\n",ft);
-        Get_Para();
-        if(DCMotor_Param.IS_Enable)
-        {
-            /* 设置方向和速度 */
-            if(DCMotor_Param.Duty_Cycles>0)
-            {
-                SetMotorDir(1);
-            }
-            else
-            {
-                SetMotorDir(0);
-                DCMotor_Param.Duty_Cycles = -DCMotor_Param.Duty_Cycles;
-            }
-            SetMotorSpeed(DCMotor_Param.Duty_Cycles);
-            start_flag = 1;
-        }
-        else
-        {
-            /* 关闭通道输出 */
-            DCMotor_Param.Duty_Cycles = 0;
-            SetMotorSpeed(DCMotor_Param.Duty_Cycles);  
-            SetMotorStop();
-        }
-#else        
+    {
         KEY_Scan();
         if(key_id_done==0)Key_process();
         LED1Toggle();
-        while(timer_1ms<TIME_BASE_MAIN){};    //将接受到的数据直接返回打印}		//20ms
+        while(timer_1ms<TIME_BASE_MAIN){}; 	//20ms
 	    timer_1ms=0;
-#endif
-    }		
+    }
 }
 
 void Key_process(void)
@@ -202,39 +87,42 @@ void Key_process(void)
             key_id_done=1;
             if(BDCMOTOR_state == BDCMOTOR_RUN)
             {
-                if(PWM_Duty < BDCMOTOR_DUTY_FULL) PWM_Duty+=5;
-                if(PWM_Duty > BDCMOTOR_DUTY_FULL) PWM_Duty = BDCMOTOR_DUTY_FULL;
-                SetMotorSpeed(PWM_Duty);
+                sPID.SetPoint += 2;
+                if(sPID.SetPoint >= MAX_SPEED) // 满速 r/m
+                    sPID.SetPoint = MAX_SPEED;
             }
             break;
         case KEY_SPEED_DOWN:
             key_id_done=1;
             if(BDCMOTOR_state == BDCMOTOR_RUN)
             {
-                //if(PWM_Duty >= BDCMOTOR_DUTY_ZERO+5) PWM_Duty-=5;
-                //else PWM_Duty = BDCMOTOR_DUTY_ZERO;
-                if(PWM_Duty > BDCMOTOR_DUTY_ZERO) PWM_Duty-=5;
-                if(PWM_Duty < BDCMOTOR_DUTY_ZERO) PWM_Duty = BDCMOTOR_DUTY_ZERO;
-                SetMotorSpeed(PWM_Duty);        
+                sPID.SetPoint -= 2;
+                if(sPID.SetPoint <=-MAX_SPEED)
+                    sPID.SetPoint = -MAX_SPEED;
             }
             break;    
-        case KEY_TURN_Clockwise:
+        case KEY_START:
             key_id_done=1;
-            if(BDCMOTOR_state == BDCMOTOR_IDLE) SetMotorDir(0);
-            break;   
-        case KEY_TURN_Anticlockwise:
-            key_id_done=1;
-            if(BDCMOTOR_state == BDCMOTOR_IDLE) SetMotorDir(1);
-            break;   
-        case KEY_SHUTDOWN:
-            key_id_done=1;
-            if(BDCMOTOR_state == BDCMOTOR_RUN) 
+            if(BDCMOTOR_state == BDCMOTOR_IDLE) 
             {
+                if(sPID.SetPoint > 0)
+                    SetMotorDir(0);
+                else SetMotorDir(1);
+                start_flag = 1;
+            }
+            break;
+        case KEY_STOP:
+            key_id_done=1;
+            if(BDCMOTOR_state == BDCMOTOR_RUN)
+            {
+                start_flag = 0;
+                sPID.PrevError  = 0;
+                sPID.LastError = 0;
                 PWM_Duty=0;
-                SetMotorSpeed(PWM_Duty);  
+                SetMotorSpeed(PWM_Duty);
                 SetMotorStop();
             }
-            break;           
+            break;
     }
 }
 
@@ -248,85 +136,67 @@ void Key_process(void)
   */
 extern __IO uint32_t uwTick;
 static __IO uint32_t OverCurCount;          // 过流次数记录
-
-//for速度环
-__IO int32_t Spd_Pulse;           // 编码器捕获值 Pulse
-__IO int32_t LastSpd_Pulse;       // 编码器捕获值 Pulse
-__IO int32_t Spd_PPS;             // 速度值 Pulse/Sample
-__IO float Spd_RPM;               // 速度值 r/m
-__IO int32_t tmpPWM_Duty = 0;
+__IO int32_t LastSpd_Pulse= 0;      // 编码器捕获值 Pulse
 void SYSTICK_Callback(void)
 {
     unsigned char str[10];
     __IO float Volt_Result = 0;
     __IO float Volt_Bus = 0;
-    
-    if(start_flag) // 等待脉冲输出后才开始计时
-    {
-#if 0       
-        time_count++;         // 每1ms自动增一
-        if(time_count==1000)  // 1s
-        {
-            float Speed = 0;
-            CaptureNumber = ( int32_t )TIM_GetCounter(ENCODER_TIMx)+OverflowCount*65536;
-            printf("Inputs:%d \r\n",CaptureNumber);
-            // 4 : 使用定时器编码器接口捕获AB相的上升沿和下降沿，一个脉冲*4.
-            // 11：编码器线数(转速一圈输出脉冲数)
-            // 270：电机减数比，内部电机转动圈数与电机输出轴转动圈数比，即减速齿轮比
-            Speed = (float)CaptureNumber/PPR;
-            printf("电机实际转动速度%0.2f r/s \r\n",Speed);
 
-            Clear_Screen(3);
-            Display_String(0, 48, "Speed:", Red);
-            sprintf((char *)str, "%0.2f", Speed);
-            Display_String(64, 48, str, Green);//
-            Display_String(104, 48, "r/s", Blue);
+    __IO int32_t Spd_Pulse = 0;       // 编码器捕获值 Pulse
+    __IO int32_t Spd_PPS   = 0;       // 速度值 Pulse/Sample
+    __IO float Spd_RPM     = 0;       // 速度值 r/m
+    __IO int32_t FB_Speed  = 0;       // 用于反馈速度值到上位机 
+
+    
+    /* 速度环周期100ms */
+    if(uwTick % 100 == 0)
+    {
+        Spd_Pulse = ( int32_t )TIM_GetCounter(ENCODER_TIMx)+OverflowCount*65536;
+        Spd_PPS = Spd_Pulse - LastSpd_Pulse;
+        LastSpd_Pulse = Spd_Pulse;
         
-            if(Speed==0)start_flag = 0;
-            OverflowCount = 0;
-            TIM_SetCounter(ENCODER_TIMx, 0);
-            time_count=0;
-        }
-#endif
-        /* 速度环周期100ms */
-        if(uwTick % 100 == 0)
+        /* 11线编码器,30减速比,一圈脉冲信号是11*30*4 */
+        /* 放大10倍计算r/s，放大60则是计算r/m*/
+        Spd_RPM = ((((float)Spd_PPS/(float)PPR)*10.0f)*(float)60);
+        
+        /* 计算PID结果 */
+        if(start_flag == 1)
         {
-            Spd_Pulse = ( int32_t )TIM_GetCounter(ENCODER_TIMx)+OverflowCount*65536;
-            Spd_PPS = Spd_Pulse - LastSpd_Pulse;
-            LastSpd_Pulse = Spd_Pulse;
-            /* 11线编码器,270减速比,一圈脉冲信号是11*270*4 = 11880 */
-            Spd_RPM = ((((float)Spd_PPS/(float)PPR)*10.0f)*(float)60);
-            
-            //tmpPWM_Duty = SpdPIDCalc(Spd_RPM);
-            //if(tmpPWM_Duty < 0) tmpPWM_Duty = -tmpPWM_Duty;
-      
+            PWM_Duty = SpdPIDCalc(Spd_RPM);
+
             /* 根据速度环的计算结果判断当前运动方向 */
-//            if(tmpPWM_Duty < 0)
-//            {
-//                Motor_Dir = CW;
-//                BDDCMOTOR_DIR_CW();
-//                tmpPWM_Duty = -tmpPWM_Duty;
-//            }
-//            else
-//            {
-//                Motor_Dir = CCW;
-//                BDDCMOTOR_DIR_CCW();
-//            }
-            /* 设定电流环的目标值,电流没有负数 */
-            //if(tmpPWM_Duty >= TARGET_CURRENT)
-            //    tmpPWM_Duty = TARGET_CURRENT;      
-            
-            Clear_Screen(3);
-            Display_String(0, 48, "Speed:", Red);
-            sprintf((char *)str, "%0.2f", Spd_RPM);
-            Display_String(64, 48, str, Green);//
-            Display_String(104, 48, "r/m", Blue);            
+            if(PWM_Duty < 0)
+            {
+                SetMotorDir(1);
+                /* 限制占空比 */
+                if(PWM_Duty < -BDCMOTOR_DUTY_FULL)
+                    PWM_Duty = -BDCMOTOR_DUTY_FULL;
+                /* 直接修改占空比 */
+                SetMotorSpeed(-PWM_Duty);                
+            }
+            else
+            {
+                SetMotorDir(0);
+                /* 限制占空比 */
+                if(PWM_Duty > BDCMOTOR_DUTY_FULL)
+                    PWM_Duty = BDCMOTOR_DUTY_FULL;
+                /* 直接修改占空比 */
+                SetMotorSpeed(PWM_Duty);        
+            }
         }
+//    #undef FB_USE_GRAPHIC 
+#ifdef FB_USE_GRAPHIC 
+        FB_Speed =ROUND_TO_INT32(Spd_RPM);
+        Transmit_FB( (int32_t *)&FB_Speed);
+#else
+        printf("Spd:%d Pulse -- Spd: %.2f r/m \n",Spd_PPS,Spd_RPM);
+#endif        
     }
+
     
     /* 数据反馈周期是50ms,由于电流采集周期大约是 2ms,所以数据反馈周期最好不要低于2ms */
-    //电流环周期是40ms
-    if((uwTick % 40) == 0)//((uwTick % 50) == 0)//((uwTick % 50) == 0&&OffsetCnt_Flag<32 || (uwTick % 500) == 0&&OffsetCnt_Flag>=32)//
+    if ((uwTick % 50) == 0)
     {
         ADC_Resul = AverSum/AverCnt;
         /* 连续采样16次以后,以第17次作为校准偏差值 */
@@ -348,22 +218,6 @@ void SYSTICK_Callback(void)
         AverCnt = 0;
         AverSum = 0;        
 
-        /* 计算PID结果 */
-        if(0)//(start_flag == 1)
-        {  
-            cPID.SetPoint = tmpPWM_Duty ;
-            PWM_Duty = CurPIDCalc( (int32_t)ADC_CurrentValue);
-            if(PWM_Duty >= BDCMOTOR_DUTY_FULL) PWM_Duty = BDCMOTOR_DUTY_FULL;
-            if(PWM_Duty <=0) PWM_Duty = 0;
-            SetMotorSpeed(PWM_Duty);
-        }
-        
-        Clear_Screen(0);
-        Display_String(0, 0, "Current:", Red);
-        sprintf((char *)str, "%d", (int32_t)(ADC_CurrentValue+10));
-        Display_String(64, 0, str, Green);
-        Display_String(112, 0, "mA", Blue);
-        
         /* 过流保护 */
         if(OffsetCnt_Flag >= 32 )
         {
@@ -382,37 +236,56 @@ void SYSTICK_Callback(void)
                 }
             }
             else OverCurCount = 0;
-        }
-        
-        /* 直接使用串口助手打印电流电压值 */
-        if(0)//((uwTick % 1000) == 0)
-        {
-        ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;
-        Volt_Bus = ADC_VoltBus;
-        printf("BUSVolt: %.2fV\n", ADC_VoltBus);            
-        printf("Volt: %.1f mV -- Curr: %d mA\n",Volt_Result,(int32_t)(ADC_CurrentValue+10));  // +10 是因为驱动板的电流大约是10mA
-
-        Clear_Screen(0);
-        Display_String(0, 0, "Current:", Red);
-        sprintf((char *)str, "%d", (int32_t)(ADC_CurrentValue+10));
-        Display_String(64, 0, str, Green);
-        Display_String(112, 0, "mA", Blue);
-            
-        Clear_Screen(1);
-        Display_String(0, 16, "Volt:", Red);
-        sprintf((char *)str, "%.1f", Volt_Result);
-        Display_String(64, 16, str, Green);
-        Display_String(112, 16, "mV", Blue); 
-            
-        Clear_Screen(2);
-        Display_String(0, 32, "BusVolt:", Red);
-        sprintf((char *)str, "%.2f", Volt_Bus);
-        Display_String(64, 32, str, Green);
-        Display_String(120, 32, "V", Blue);             
-        }            
+        }     
     }    
 }
 
+/**
+  * 函数功能: 解析数据
+  * 输入参数: 无
+  * 返 回 值: 无
+  * 说    明: 将接收到的数据帧进行解析提取.
+  */
+PID_TypeDef  *ptr =  &sPID;
+void Analyse_Data_Callback()
+{
+    __IO uint8_t i = 0 ;
+    __IO uint8_t *Ptr = &RxBuf[FRAME_CHECK_BEGIN+1];
+    __IO char *Str = &Msg.data[0].Ch[0];
+    Msg.Code = RxBuf[FRAME_CHECK_BEGIN];         // 第二位是指令码
+    /* 利用结构体和数组的内存连续性,使用指针提取数据 */
+    for(i=0;i<(FRAME_CHECK_NUM-1);i++)
+    {
+        *Str++ = *Ptr++ ;
+    }
+    switch(Msg.Code)
+    {
+        /* 设置PID参数 */
+        case CODE_SETPID:
+            ptr->Proportion = Msg.data[0].Float; 
+            ptr->Integral   = Msg.data[1].Float;
+            ptr->Derivative = Msg.data[2].Float;
+            break;
+        /* 设置目标值 */
+        case CODE_SETTGT:
+            ptr->SetPoint = Msg.data[0].Int;
+            break;
+        case CODE_RESET:
+            /* System Reset */
+            NVIC_SystemReset(); 
+            break;
+        case CODE_STARTMOTOR:
+            if(BDCMOTOR_state == BDCMOTOR_IDLE) 
+            {
+                if(sPID.SetPoint > 0)
+                    SetMotorDir(0);
+                else SetMotorDir(1);
+                start_flag = 1;
+            }
+            break;
+        default:break;
+    }
+} 
 
 /**
   * 函数功能: ADC看门狗中断回调函数

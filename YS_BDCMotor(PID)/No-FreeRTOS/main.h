@@ -17,7 +17,7 @@ extern uint8_t timer_1ms;
 
 #define TIME_BASE_MAIN      20
 
-#define UART_CONTROL //使用串口控制电机运转
+#define FB_USE_GRAPHIC              // 使用图像曲线作为反馈
 
 void SYSTICK_Callback(void);
 
