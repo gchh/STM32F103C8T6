@@ -25,7 +25,7 @@ void ENCODER_GPIO_Init(void)
 void ENCODER_TIMx_Init(void)
 {
     TIM_TimeBaseInitTypeDef  TIM_TimeBaseStructure;
-    TIM_ICInitTypeDef sEncoderConfig;
+//    TIM_ICInitTypeDef sEncoderConfig;
     RCC_APB1PeriphClockCmd(ENCODER_TIM_RCC, ENABLE);//使能外设时钟
     
     /* 定时器基本环境配置 */

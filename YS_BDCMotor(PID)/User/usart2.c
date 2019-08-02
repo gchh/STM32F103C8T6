@@ -1,5 +1,6 @@
 #include "usart.h"
 
+uint8_t tx_ready, rx_cnt=0, tx_cnt=0, tx_cnt_size, rx_cnt_size;
 __IO uint8_t RxBuf[FRAME_LENTH] ; // 接收缓存区
 __IO uint8_t TxBuf[FRAME_LENTH] ; // 发送缓存区
 MSG_TypeDef Msg;
@@ -60,7 +61,13 @@ void USART_Config(void)
 #endif
     //USART_ITConfig(USART, USART_IT_TXE, ENABLE);	    
     USART_Cmd(USART, ENABLE);
-
+    
+    tx_ready=1;
+    rx_cnt=0;
+    tx_cnt=0;    
+    rx_cnt_size=FRAME_LENTH;//接收数据帧长度
+    tx_cnt_size=FRAME_LENTH;//发送数据帧长度
+    
 #ifdef USART_IT
     /* 配置串口中断并使能，需要放在UART_Init函数后执行修改才有效 */    
     NVIC_SetPriority(USART_IRQn, 0);
@@ -95,26 +102,27 @@ int fputc(int ch, FILE *f)
   */
 int fgetc(FILE * f)
 {
-    uint8_t ch = 0;
-#ifdef USART_IT
     static uint8_t i = 0;
-    while(RxBuf[i] == 0) //|| Buffer[i] == '\r' || Buffer[i] == '\n')
+    uint8_t ch = 0;
+   
+    if(i==0)
+    {
+        rx_cnt=0;
+        rx_cnt_size=1;
+    }
+    while(RxBuf[i] == 0)
     {
         i++;
-        if(i==FRAME_LENTH)
+        if(i==rx_cnt_size)
+        {
             i = 0;
+            rx_cnt=0;
+            rx_cnt_size=1;
+        }
     }
     ch = RxBuf[i];
-    RxBuf[i] = 0;
-#else
-    if(USART_ReceiveData(USART) == '\r')ch = USART_ReceiveData(USART);//USART_ClearFlag(USART, USART_FLAG_RXNE);//当要求输入Y时，如果输入超过2个非Y字符或数字时，在输入Y，会接收不到这个Y，收到的是'\r'，加上这句就可以。
-    if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
-    {
-        USART_ClearFlag(USART, USART_FLAG_ORE);
-    }
-    while(USART_GetFlagStatus(USART, USART_FLAG_RXNE) == RESET);
-    ch = USART_ReceiveData(USART);
-#endif  
+    RxBuf[i] = 0; 
+    
     return ch;
 }
 
@@ -137,20 +145,19 @@ uint8_t CheckSum(uint8_t *Ptr,uint8_t Num )
 }
 
 #ifdef USART_IT
-uint8_t rx_cnt=0;
 void USART_IRQHANDLER(void)
 {
     if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
     {
         USART_ClearFlag(USART, USART_FLAG_ORE);
+        RxBuf[rx_cnt]=USART_ReceiveData(USART);
     }
     if(USART_GetITStatus(USART, USART_IT_RXNE) != RESET)
-    //if(USART_GetFlagStatus(USART, USART_FLAG_RXNE) != RESET)
     {
-        //USART_ClearITPendingBit(USART, USART_IT_RXNE);
-        USART_ClearFlag(USART, USART_FLAG_RXNE);
+        USART_ClearITPendingBit(USART, USART_IT_RXNE);
+        //USART_ClearFlag(USART, USART_FLAG_RXNE);
         
-        if(rx_cnt >= FRAME_LENTH) rx_cnt=0;
+        if(rx_cnt >= rx_cnt_size) rx_cnt=0;
         RxBuf[rx_cnt]=USART_ReceiveData(USART);
         
         if(rx_cnt==0)
@@ -158,7 +165,7 @@ void USART_IRQHANDLER(void)
             if(RxBuf[0] != FRAME_START )  rx_cnt=0;   // 帧头正确
             else rx_cnt++;
         }
-        else if(rx_cnt==FRAME_LENTH-1)
+        else if(rx_cnt==rx_cnt_size-1)
         {
             if(RxBuf[rx_cnt] == FRAME_END ) // 帧尾正确
             { 
@@ -181,12 +188,35 @@ void USART_IRQHANDLER(void)
         }
         else 
         {
-            if(rx_cnt < FRAME_LENTH) rx_cnt++;
+            if(rx_cnt < rx_cnt_size) rx_cnt++;
             else rx_cnt=0;
         }
-        //HAL_UART_Receive_IT(huart,(uint8_t *)&RxBuf,FRAME_LENTH); // 重新使能接收中断        
     }
-    
+    if(USART_GetITStatus(USART, USART_IT_TXE) != RESET)
+    {
+        USART_ClearITPendingBit(USART, USART_IT_TXE);
+       
+        if(tx_cnt<tx_cnt_size) 
+        {
+            USART_SendData(USART, TxBuf[tx_cnt]);
+            tx_cnt++;
+        }
+        else 
+        {
+            tx_cnt=0;
+            /* Disable the UART Transmit Complete Interrupt */
+            USART_ITConfig(USART, USART_IT_TXE, DISABLE);
+            /* Enable the UART Transmit Complete Interrupt */   
+            USART_ITConfig(USART, USART_IT_TC, ENABLE);
+        }
+    }
+    if(USART_GetITStatus(USART, USART_IT_TC) != RESET)
+    {
+        USART_ClearITPendingBit(USART, USART_IT_TC);
+        /* Disable the UART Transmit Complete Interrupt */ 
+        USART_ITConfig(USART, USART_IT_TC, ENABLE);
+        tx_ready=1;
+    }
 }
 #endif
 
@@ -199,25 +229,30 @@ void USART_IRQHANDLER(void)
   */
 void Transmit_FB( __IO int32_t *Feedback)
 {
-  uint8_t i = 0;
-  for(i=0;i<FRAME_LENTH;i++)
-  {
-    TxBuf[i] = FILL_VALUE;  // 参数填充 0x55
-  }
+    uint8_t i = 0;
+    for(i=0;i<FRAME_LENTH;i++)
+    {
+        TxBuf[i] = FILL_VALUE;  // 参数填充 0x55
+    }
   
-  Msg.data[0].Int = *Feedback;//反馈值 速度
+    Msg.data[0].Int = *Feedback;//反馈值 速度
   
-  TxBuf[0] = FRAME_START;   // 帧头
-  TxBuf[1] = 0x80|CODE_SETTGT; // 指令码
-  TxBuf[2] = Msg.data[0].Ch[0];
-  TxBuf[3] = Msg.data[0].Ch[1];
-  TxBuf[4] = Msg.data[0].Ch[2];
-  TxBuf[5] = Msg.data[0].Ch[3];
+    TxBuf[0] = FRAME_START;   // 帧头
+    TxBuf[1] = 0x80|CODE_SETTGT; // 指令码
+    TxBuf[2] = Msg.data[0].Ch[0];
+    TxBuf[3] = Msg.data[0].Ch[1];
+    TxBuf[4] = Msg.data[0].Ch[2];
+    TxBuf[5] = Msg.data[0].Ch[3];
   
-  TxBuf[FRAME_CHECKSUM] = CheckSum((uint8_t*)&TxBuf[FRAME_CHECK_BEGIN],FRAME_CHECK_NUM);  // 计算校验和
-  TxBuf[FRAME_LENTH-1] = FRAME_END;   // 加入帧尾
+    TxBuf[FRAME_CHECKSUM] = CheckSum((uint8_t*)&TxBuf[FRAME_CHECK_BEGIN],FRAME_CHECK_NUM);  // 计算校验和
+    TxBuf[FRAME_LENTH-1] = FRAME_END;   // 加入帧尾
 
-  USART_SendData(USART, uint16_t Data);
-  USART_ITConfig(USART, USART_IT_TXE, ENABLE);
-  HAL_UART_Transmit_IT(&husartx,(uint8_t *)&TxBuf,FRAME_LENTH); // 发送数据帧
+    if(tx_ready==1) // 发送数据帧
+    {
+        tx_ready=0;
+        tx_cnt=0;
+        tx_cnt_size=FRAME_LENTH;
+        /* Enable the UART Transmit data register empty Interrupt */
+        USART_ITConfig(USART, USART_IT_TXE, ENABLE);
+    }
 }

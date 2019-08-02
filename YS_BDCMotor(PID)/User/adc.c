@@ -120,7 +120,6 @@ void ADC_DMA_Init(void)
 
 void ADC_Calibration(void)
 {
-    uint32_t tickstart = 0, adc_error = 0;
     __IO uint32_t wait_loop_index = 0;
     RCC_ClocksTypeDef RCC_Clocks;
     
@@ -129,70 +128,34 @@ void ADC_Calibration(void)
     if(ADCx->CR2 & ADC_CR2_ADON) //ADC已开启转换，校准前先关闭
     {
         ADC_Cmd(ADCx, DISABLE);
-//        tickstart = uwTick;
         //等待ADC停止
-        while( (ADCx->CR2 & ADC_CR2_ADON) != RESET )
-        {
-//            if((uwTick - tickstart) > ADC_DISABLE_TIMEOUT)
-//            {
-//                adc_error=0X01;
-//            }            
-        }
+        while( (ADCx->CR2 & ADC_CR2_ADON) != RESET ){}
     }
-    if(adc_error==0)
+
+    //校准前，ADC要停止至少2个ADC时钟周期
+    RCC_GetClocksFreq(&RCC_Clocks);
+    wait_loop_index = ( (SystemCoreClock / RCC_Clocks.ADCCLK_Frequency) 
+                        * ADC_PRECALIBRATION_DELAY_ADCCLOCKCYCLES );        
+    while(wait_loop_index != 0)
     {
-        //校准前，ADC要停止至少2个ADC时钟周期
-        RCC_GetClocksFreq(&RCC_Clocks);
-        wait_loop_index = ( (SystemCoreClock / RCC_Clocks.ADCCLK_Frequency) 
-                            * ADC_PRECALIBRATION_DELAY_ADCCLOCKCYCLES );        
-        while(wait_loop_index != 0)
-        {
-          wait_loop_index--;
-        }
-        
-        /* 2. Enable the ADC peripheral */
-        if( (ADCx->CR2 & ADC_CR2_ADON) == RESET )
-        {
-            ADC_Cmd(ADCx, ENABLE);
-            //等待ADC稳定
-//            wait_loop_index = (ADC_STAB_DELAY_US * (SystemCoreClock / 1000000));
-//            while(wait_loop_index != 0)
-//            {
-//              wait_loop_index--;
-//            }            
-//            tickstart = uwTick;
-            //等待ADC开启
-            while( (ADCx->CR2 & ADC_CR2_ADON) == RESET )
-            {
-//                if((uwTick - tickstart) > ADC_ENABLE_TIMEOUT)
-//                {
-//                    adc_error=0X02;
-//                }
-            }
-        }
-        
-        /* 3. Resets ADC calibration registers */  
-        ADC_ResetCalibration(ADCx);
-//        tickstart = uwTick;
-        while( ADC_GetResetCalibrationStatus(ADCx) == SET )
-        {
-//            if((uwTick - tickstart) > ADC_CALIBRATION_TIMEOUT)
-//            {
-//                adc_error=0X04;
-//            }            
-        }
-        
-        /* 4. Start ADC calibration */
-        ADC_StartCalibration(ADCx);
-//        tickstart = uwTick;
-        while( ADC_GetCalibrationStatus(ADCx) == SET )
-        {
-//            if((uwTick - tickstart) > ADC_CALIBRATION_TIMEOUT)
-//            {
-//                adc_error=0X08;
-//            }             
-        }
-    }        
+      wait_loop_index--;
+    }
+    
+    /* 2. Enable the ADC peripheral */
+    if( (ADCx->CR2 & ADC_CR2_ADON) == RESET )
+    {
+        ADC_Cmd(ADCx, ENABLE);
+        //等待ADC开启
+        while( (ADCx->CR2 & ADC_CR2_ADON) == RESET ){}
+    }
+    
+    /* 3. Resets ADC calibration registers */  
+    ADC_ResetCalibration(ADCx);
+    while( ADC_GetResetCalibrationStatus(ADCx) == SET ){}
+    
+    /* 4. Start ADC calibration */
+    ADC_StartCalibration(ADCx);
+    while( ADC_GetCalibrationStatus(ADCx) == SET ){}
 }
 
 void ADC_Start_DMA(void)

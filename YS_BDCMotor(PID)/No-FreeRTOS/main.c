@@ -24,8 +24,7 @@ void Key_process(void);
   */
 int main(void)
 {
-    //__IO char ch = 0,buff[100];
-    //float ft;
+    //char c[15];
 	OLED_Init();	//OLED初始化
 	Fill_RAM(0x0000);	//清屏
 
@@ -67,10 +66,13 @@ int main(void)
     ADC_Start_DMA();
 
     /* PID 参数初始化 */
-    PID_ParamInit();
+    PID_ParamInit();    
     
+    //printf("Input: \n");
     while(1)
     {
+    //scanf("%s", c);
+    //printf("Input is %s\n",c);        
         KEY_Scan();
         if(key_id_done==0)Key_process();
         LED1Toggle();
@@ -139,7 +141,6 @@ static __IO uint32_t OverCurCount;          // 过流次数记录
 __IO int32_t LastSpd_Pulse= 0;      // 编码器捕获值 Pulse
 void SYSTICK_Callback(void)
 {
-    unsigned char str[10];
     __IO float Volt_Result = 0;
     __IO float Volt_Bus = 0;
 
@@ -190,7 +191,7 @@ void SYSTICK_Callback(void)
         FB_Speed =ROUND_TO_INT32(Spd_RPM);
         Transmit_FB( (int32_t *)&FB_Speed);
 #else
-        printf("Spd:%d Pulse -- Spd: %.2f r/m \n",Spd_PPS,Spd_RPM);
+        //printf("Spd:%d Pulse -- Spd: %.2f r/m \n",Spd_PPS,Spd_RPM);
 #endif        
     }
 
