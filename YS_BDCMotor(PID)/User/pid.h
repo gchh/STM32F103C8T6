@@ -3,6 +3,10 @@
 
 #include "stm32f10x.h"
 
+/* 四舍五入 */
+//将浮点数x四舍五入为int32_t
+#define ROUND_TO_INT32(x)   ((int32_t)(x)+0.5f)>=(x)? ((int32_t)(x)):((uint32_t)(x)+1) 
+
 
 /* 私有类型定义 --------------------------------------------------------------*/
 typedef struct 
@@ -27,10 +31,10 @@ typedef struct
 #define  CUR_D_DATA      0.0f    // D参数
 #define  TARGET_CURRENT  300     // 最大电流值 300mA
 
-#define  SPD_P_DATA      2.5f    // P参数
-#define  SPD_I_DATA      0.5f    // I参数
+#define  SPD_P_DATA      0.3f    // P参数
+#define  SPD_I_DATA      0.08f    // I参数
 #define  SPD_D_DATA      0.0f    // D参数
-#define  TARGET_SPEED    10.0f   // 目标速度    10r/m
+#define  TARGET_SPEED    100.0f//10.0f   // 目标速度    10r/m
 #define  MAX_SPEED       380  // 空载满速380r/m
 
 extern PID_TypeDef  cPID,sPID;                     // PID参数结构体

@@ -6,13 +6,10 @@
 #define SPEEDRATIO  30    // 电机减速比
 #define PPR         (SPEEDRATIO*ENCODER*4) // Pulse/r 每圈可捕获的脉冲数
 /* 私有变量 ------------------------------------------------------------------*/
-__IO uint8_t  start_flag=0;
-__IO uint16_t time_count=0;        // 时间计数，每1ms增加一(与滴定时器频率有关)
-uint8_t timer_1ms;
+__IO uint8_t  start_flag=0;        // PID 开始标志
+__IO int32_t LastSpd_Pulse= 0;      // 编码器捕获值 Pulse
 
-/* 四舍五入 */
-//将浮点数x四舍五入为int32_t
-#define ROUND_TO_INT32(x)   ((int32_t)(x)+0.5f)>=(x)? ((int32_t)(x)):((uint32_t)(x)+1) 
+uint8_t timer_1ms;
 
 void Key_process(void);
 
@@ -108,8 +105,8 @@ void Key_process(void)
             if(BDCMOTOR_state == BDCMOTOR_IDLE) 
             {
                 if(sPID.SetPoint > 0)
-                    SetMotorDir(0);
-                else SetMotorDir(1);
+                    SetMotorDir(1);
+                else SetMotorDir(0);
                 start_flag = 1;
             }
             break;
@@ -138,7 +135,6 @@ void Key_process(void)
   */
 extern __IO uint32_t uwTick;
 static __IO uint32_t OverCurCount;          // 过流次数记录
-__IO int32_t LastSpd_Pulse= 0;      // 编码器捕获值 Pulse
 void SYSTICK_Callback(void)
 {
     __IO float Volt_Result = 0;
@@ -169,7 +165,7 @@ void SYSTICK_Callback(void)
             /* 根据速度环的计算结果判断当前运动方向 */
             if(PWM_Duty < 0)
             {
-                SetMotorDir(1);
+                SetMotorDir(0);
                 /* 限制占空比 */
                 if(PWM_Duty < -BDCMOTOR_DUTY_FULL)
                     PWM_Duty = -BDCMOTOR_DUTY_FULL;
@@ -178,7 +174,7 @@ void SYSTICK_Callback(void)
             }
             else
             {
-                SetMotorDir(0);
+                SetMotorDir(1);
                 /* 限制占空比 */
                 if(PWM_Duty > BDCMOTOR_DUTY_FULL)
                     PWM_Duty = BDCMOTOR_DUTY_FULL;
@@ -279,8 +275,8 @@ void Analyse_Data_Callback()
             if(BDCMOTOR_state == BDCMOTOR_IDLE) 
             {
                 if(sPID.SetPoint > 0)
-                    SetMotorDir(0);
-                else SetMotorDir(1);
+                    SetMotorDir(1);
+                else SetMotorDir(0);
                 start_flag = 1;
             }
             break;

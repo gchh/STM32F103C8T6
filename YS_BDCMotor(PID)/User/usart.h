@@ -57,6 +57,4 @@ void USART_GPIO_Init(void);
 void USART_Config(void);
 void Transmit_FB( __IO int32_t *Feedback);
 
-#define USART_IT // π”√÷–∂œ
-
 #endif

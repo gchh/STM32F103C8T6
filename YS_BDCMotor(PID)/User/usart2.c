@@ -56,9 +56,7 @@ void USART_Config(void)
     USART_Init(USART, &USART_InitStructure); //调用库函数，配置USART1
     
     USART_ClearFlag(USART,USART_FLAG_TC);
-#ifdef USART_IT
     USART_ITConfig(USART, USART_IT_RXNE, ENABLE);
-#endif
     //USART_ITConfig(USART, USART_IT_TXE, ENABLE);	    
     USART_Cmd(USART, ENABLE);
     
@@ -68,11 +66,9 @@ void USART_Config(void)
     rx_cnt_size=FRAME_LENTH;//接收数据帧长度
     tx_cnt_size=FRAME_LENTH;//发送数据帧长度
     
-#ifdef USART_IT
     /* 配置串口中断并使能，需要放在UART_Init函数后执行修改才有效 */    
     NVIC_SetPriority(USART_IRQn, 0);
     NVIC_EnableIRQ(USART_IRQn); 
-#endif
 }
 
 
@@ -144,7 +140,6 @@ uint8_t CheckSum(uint8_t *Ptr,uint8_t Num )
   return Sum;
 }
 
-#ifdef USART_IT
 void USART_IRQHANDLER(void)
 {
     if(USART_GetFlagStatus(USART, USART_FLAG_ORE) != RESET)
@@ -218,7 +213,6 @@ void USART_IRQHANDLER(void)
         tx_ready=1;
     }
 }
-#endif
 
 
 /**
