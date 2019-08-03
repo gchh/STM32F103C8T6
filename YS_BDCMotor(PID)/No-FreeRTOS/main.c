@@ -14,6 +14,80 @@ uint8_t timer_1ms;
 void Key_process(void);
 
 /**
+  * 函数功能: 系统时钟配置
+  * 输入参数: 无
+  * 返 回 值: 无
+  * 说    明: 无
+  */
+void SystemClock_Config(void)
+{
+    RCC_ClocksTypeDef RCC_CLOCK;
+    
+    if(RCC_GetSYSCLKSource()==0x04 || RCC_GetSYSCLKSource()==0x08) //HSE used as system clock / PLL used as system clock
+    {
+        //切换为HSI作为系统时钟
+        if((RCC_GetFlagStatus(RCC_FLAG_HSIRDY)==RESET)) //打开HSI
+        {
+            RCC_HSICmd(ENABLE);
+            while(RCC_GetFlagStatus(RCC_FLAG_HSIRDY)==SET);
+        }
+        /*------------------------- SYSCLK Configuration ---------------------------*/ 
+        RCC_SYSCLKConfig(RCC_SYSCLKSource_HSI); //HSI selected as system clock; SYSCLK = HSI      
+        /*-------------------------- HCLK Configuration --------------------------*/
+        RCC_HCLKConfig(RCC_SYSCLK_Div1); //AHB clock (HCLK) = SYSCLK;
+        while(RCC_GetSYSCLKSource()!=0x00); //等待系统时钟切换为HSI
+        /*-------------------------- PCLK1 Configuration ---------------------------*/ 
+        RCC_PCLK1Config(RCC_HCLK_Div1); //APB1 clock (PCLK1) = HCLK; 
+        /*-------------------------- PCLK2 Configuration ---------------------------*/ 
+        RCC_PCLK2Config(RCC_HCLK_Div1); //APB2 clock (PCLK2) = HCLK;      
+    }
+    if(RCC_GetSYSCLKSource()==0x00) //HSI used as system clock
+    {
+        if((RCC_GetFlagStatus(RCC_FLAG_HSERDY)==SET)) //如果HSE已打开，先关闭
+        {
+            RCC_HSEConfig(RCC_HSE_OFF);
+            while(RCC_GetFlagStatus(RCC_FLAG_HSERDY)==SET);
+        }
+        RCC_HSEConfig(RCC_HSE_ON); //打开外部晶振，8MHz
+        while(RCC_GetFlagStatus(RCC_FLAG_HSERDY)==RESET); //等待外部时钟稳定
+        
+        
+        if((RCC_GetFlagStatus(RCC_FLAG_PLLRDY)==SET)) //如果PLL已打开，先关闭
+        {
+            RCC_PLLCmd(DISABLE);
+            while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY)==SET);
+        }        
+        RCC_PLLConfig(RCC_PLLSource_HSE_Div1, RCC_PLLMul_9); //HSE/1作为PLL的输入时钟源；PLL 9倍频输出：PLLCLK = 8MHz * 9 = 72MHz
+        RCC_PLLCmd(ENABLE); //打开PLL
+        while(RCC_GetFlagStatus(RCC_FLAG_PLLRDY)==RESET); //等待PLL稳定 
+
+        
+        /*FLASH读取等待时间和SYSCLK的关系：
+          0等待周期，当 0 < SYSCLK ≤ 24MHz 
+          1等待周期，当 24MHz < SYSCLK ≤ 48MHz 
+          2等待周期，当 48MHz < SYSCLK ≤ 72MHz      
+        ************************************/
+        /* Program the new number of wait states to the LATENCY bits in the FLASH_ACR register */
+        FLASH_SetLatency(FLASH_Latency_2);
+        /* Check that the new number of wait states is taken into account to access the Flash memory by reading the FLASH_ACR register */
+        while((FLASH->ACR & FLASH_ACR_LATENCY) != FLASH_Latency_2);
+        
+        /*------------------------- SYSCLK Configuration ---------------------------*/ 
+        RCC_SYSCLKConfig(RCC_SYSCLKSource_PLLCLK); //PLL selected as system clock; SYSCLK = PLLCLK
+        while(RCC_GetSYSCLKSource()!=0x08); //等待系统时钟切换为PLL        
+        /*-------------------------- HCLK Configuration --------------------------*/
+        RCC_HCLKConfig(RCC_SYSCLK_Div1); //AHB clock (HCLK) = SYSCLK; HCLK最大72MHz
+        /*-------------------------- PCLK1 Configuration ---------------------------*/ 
+        RCC_PCLK1Config(RCC_HCLK_Div2); //APB1 clock (PCLK1) = HCLK/2; PCLK1最大36MHzs
+        /*-------------------------- PCLK2 Configuration ---------------------------*/ 
+        RCC_PCLK2Config(RCC_HCLK_Div1); //APB2 clock (PCLK2) = HCLK; PCLK2最大72MHz        
+    }
+    
+    RCC_GetClocksFreq(&RCC_CLOCK);
+    SystemCoreClock = RCC_CLOCK.SYSCLK_Frequency;
+}
+
+/**
   * @file   main
   * @brief  Main program.
   * @param  None
@@ -21,6 +95,8 @@ void Key_process(void);
   */
 int main(void)
 {
+    SystemClock_Config(); //设置系统时钟72MHz，否则8MHz
+    
     //char c[15];
 	OLED_Init();	//OLED初始化
 	Fill_RAM(0x0000);	//清屏
@@ -34,6 +110,7 @@ int main(void)
         /* #define SYSCLK_FREQ_56MHz  56000000 */
         /* #define SYSCLK_FREQ_72MHz  72000000 */
     SysTick_Config(SystemCoreClock/1000);
+    //NVIC_SetPriority(SysTick_IRQn, 0);
     
     /*初始化LED端口*/
     LED_GPIO_Config();
@@ -145,7 +222,6 @@ void SYSTICK_Callback(void)
     __IO float Spd_RPM     = 0;       // 速度值 r/m
     __IO int32_t FB_Speed  = 0;       // 用于反馈速度值到上位机 
 
-    
     /* 速度环周期100ms */
     if(uwTick % 100 == 0)
     {
@@ -160,6 +236,7 @@ void SYSTICK_Callback(void)
         /* 计算PID结果 */
         if(start_flag == 1)
         {
+#ifdef SPD_PID          
             PWM_Duty = SpdPIDCalc(Spd_RPM);
 
             /* 根据速度环的计算结果判断当前运动方向 */
@@ -181,6 +258,7 @@ void SYSTICK_Callback(void)
                 /* 直接修改占空比 */
                 SetMotorSpeed(PWM_Duty);        
             }
+#endif
         }
 //    #undef FB_USE_GRAPHIC 
 #ifdef FB_USE_GRAPHIC 
@@ -223,8 +301,16 @@ void SYSTICK_Callback(void)
                 OverCurCount++;
                 if(OverCurCount >= 5)
                 {
+#ifdef FB_USE_GRAPHIC 
+                    Clear_Screen(0);
+                    Display_String(0, 0, "Over Current!", Red);
+
+                    Clear_Screen(1);
+                    Display_String(0, 16, "Please reset!", Red);             
+#else                    
                     printf("Over Current %.2f \n",ADC_CurrentValue);
                     printf("Please reset the target!!\n");
+#endif                    
                     SHUTDOWN_ON;
                     SetMotorStop();
                     PWM_Duty = 0;
@@ -305,9 +391,19 @@ void ADC_LevelOutOfWindowCallback(void)
         SetMotorStop();
         PWM_Duty = 0;
 //        ADC_VoltBus = (float)ADC_VoltBus * VOLTBUS_RESOLUTION;// ADC_VoltBus是在中断响应函数中读取的adc值
-        
+#ifdef FB_USE_GRAPHIC 
+        Clear_Screen(0);
+        Display_String(0, 0, "Bus Voltage is", Red);
+
+        Clear_Screen(1);
+        Display_String(0, 16, "out of range!!", Red);        
+
+        Clear_Screen(2);
+        Display_String(0, 32, "Please reset!", Red);        
+#else         
         printf("Bus Voltage is out of range!!\n");
         printf("Please Reset the Target!\n");
+#endif      
         while(1);
     }
 }

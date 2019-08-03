@@ -21,11 +21,14 @@ typedef struct
 }PID_TypeDef;
 
 
+#define SPD_PID //速度环
+//#define SPD_CUR_PID //速度+电流环
 /*************************************/
 // 定义PID相关宏
 // 这三个参数设定对电机运行影响非常大
 // PID参数跟采样时间息息相关
 /*************************************/
+#ifdef SPD_CUR_PID
 #define  CUR_P_DATA      0.35f   // P参数
 #define  CUR_I_DATA      0.6f    // I参数
 #define  CUR_D_DATA      0.0f    // D参数
@@ -36,6 +39,17 @@ typedef struct
 #define  SPD_D_DATA      0.0f    // D参数
 #define  TARGET_SPEED    100.0f//10.0f   // 目标速度    10r/m
 #define  MAX_SPEED       380  // 空载满速380r/m
+#endif
+
+#ifdef SPD_PID
+//对应系统时钟8MHz
+#define  SPD_P_DATA      0.3f    // P参数
+#define  SPD_I_DATA      0.08f    // I参数
+#define  SPD_D_DATA      0.0f    // D参数
+#define  TARGET_SPEED    100.0f//10.0f   // 目标速度    10r/m
+#define  MAX_SPEED       380  // 空载满速380r/m
+#endif
+
 
 extern PID_TypeDef  cPID,sPID;                     // PID参数结构体
 
