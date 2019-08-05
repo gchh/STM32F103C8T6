@@ -19,6 +19,7 @@ void Key_process(void);
   * 返 回 值: 无
   * 说    明: 无
   */
+#ifdef SYSCLk_72MHz
 void SystemClock_Config(void)
 {
     RCC_ClocksTypeDef RCC_CLOCK;
@@ -86,7 +87,7 @@ void SystemClock_Config(void)
     RCC_GetClocksFreq(&RCC_CLOCK);
     SystemCoreClock = RCC_CLOCK.SYSCLK_Frequency;
 }
-
+#endif
 /**
   * @file   main
   * @brief  Main program.
@@ -95,7 +96,9 @@ void SystemClock_Config(void)
   */
 int main(void)
 {
+#ifdef SYSCLk_72MHz    
     SystemClock_Config(); //设置系统时钟72MHz，否则8MHz
+#endif
     
     //char c[15];
 	OLED_Init();	//OLED初始化
@@ -110,7 +113,6 @@ int main(void)
         /* #define SYSCLK_FREQ_56MHz  56000000 */
         /* #define SYSCLK_FREQ_72MHz  72000000 */
     SysTick_Config(SystemCoreClock/1000);
-    //NVIC_SetPriority(SysTick_IRQn, 0);
     
     /*初始化LED端口*/
     LED_GPIO_Config();
@@ -194,6 +196,12 @@ void Key_process(void)
                 start_flag = 0;
                 sPID.PrevError  = 0;
                 sPID.LastError = 0;
+                sPID.SumError = 0;
+#ifdef SPD_CUR_PID
+                cPID.LastError = 0;
+                cPID.PrevError = 0;
+                cPID.SumError = 0;                
+#endif                
                 PWM_Duty=0;
                 SetMotorSpeed(PWM_Duty);
                 SetMotorStop();
@@ -212,6 +220,9 @@ void Key_process(void)
   */
 extern __IO uint32_t uwTick;
 static __IO uint32_t OverCurCount;          // 过流次数记录
+#ifdef SPD_CUR_PID
+__IO int32_t tmpPWM_Duty = 0;
+#endif
 void SYSTICK_Callback(void)
 {
     __IO float Volt_Result = 0;
@@ -259,6 +270,23 @@ void SYSTICK_Callback(void)
                 SetMotorSpeed(PWM_Duty);        
             }
 #endif
+#ifdef SPD_CUR_PID
+            tmpPWM_Duty = SpdPIDCalc(Spd_RPM);
+      
+            /* 根据速度环的计算结果判断当前运动方向 */
+            if(tmpPWM_Duty < 0)
+            {
+                SetMotorDir(0);
+                tmpPWM_Duty = -tmpPWM_Duty;
+            }
+            else
+            {
+                SetMotorDir(1);
+            }
+            /* 设定电流环的目标值,电流没有负数 */
+            if(tmpPWM_Duty >= TARGET_CURRENT)
+                tmpPWM_Duty = TARGET_CURRENT;            
+#endif
         }
 //    #undef FB_USE_GRAPHIC 
 #ifdef FB_USE_GRAPHIC 
@@ -269,13 +297,19 @@ void SYSTICK_Callback(void)
 #endif        
     }
 
-    
+#ifdef SPD_CUR_PID
+    /* 电流环周期是40ms,电流单次采集周期大约是 2ms,最好不要低于2ms */
+    if(uwTick % 40 == 0)
+#else      
     /* 数据反馈周期是50ms,由于电流采集周期大约是 2ms,所以数据反馈周期最好不要低于2ms */
     if ((uwTick % 50) == 0)
+#endif
     {
         ADC_Resul = AverSum/AverCnt;
-        /* 连续采样16次以后,以第17次作为校准偏差值 */
+        
         OffsetCnt_Flag++;
+#if 0
+        /* 连续采样16次以后,以第17次作为校准偏差值 */    
         if(OffsetCnt_Flag >= 16)
         {
             if(OffsetCnt_Flag == 16)
@@ -285,6 +319,19 @@ void SYSTICK_Callback(void)
             OffsetCnt_Flag = 32;
             ADC_Resul -= OffSetHex;     // 减去偏差值
         }
+#else
+        /* 连续采样16次以后,以前15次的平均采样值作为校准偏差值 */
+        if(OffsetCnt_Flag >= 16)
+        {
+            if(OffsetCnt_Flag == 16)
+            {
+                OffSetHex /= (OffsetCnt_Flag-1);
+            }
+            OffsetCnt_Flag = 32;
+            ADC_Resul -= OffSetHex;//减去偏差值
+        }
+        else OffSetHex += ADC_Resul;        
+#endif        
         /* 计算电压值和电流值 */
         Volt_Result = ( (float)( (float)(ADC_Resul) * VOLT_RESOLUTION) );
         ADC_CurrentValue = (float)( (Volt_Result / GAIN) / SAMPLING_RES);
@@ -319,7 +366,21 @@ void SYSTICK_Callback(void)
                 }
             }
             else OverCurCount = 0;
-        }     
+        }
+
+#ifdef SPD_CUR_PID
+        /* 计算PID结果 */
+        if(start_flag == 1)
+        {  
+            cPID.SetPoint = tmpPWM_Duty ;
+            PWM_Duty = CurPIDCalc( (int32_t)ADC_CurrentValue);
+            if(PWM_Duty >= BDCMOTOR_DUTY_FULL)
+                PWM_Duty = BDCMOTOR_DUTY_FULL;
+            if(PWM_Duty <=0)
+                PWM_Duty = 0;   
+            SetMotorSpeed(PWM_Duty);
+        }        
+#endif        
     }    
 }
 

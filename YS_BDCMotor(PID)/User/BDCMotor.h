@@ -20,6 +20,20 @@
 #define SHUTDOWN_ON         			    GPIO_WriteBit(SHUTDOWN_PORT,SHUTDOWN_PIN,Bit_SET)//高电平shutdown
 #define SHUTDOWN_OFF     			        GPIO_WriteBit(SHUTDOWN_PORT,SHUTDOWN_PIN,Bit_RESET)//低电平正常pwm控制
 
+#ifdef SYSCLk_72MHz
+// 定义定时器预分频，定时器实际时钟频率为：72MHz/（BDCMOTOR_TIMx_PRESCALER+1）
+#define BDCMOTOR_TIM_PRESCALER               1    // 实际时钟频率为：36MHz
+
+// 定义定时器周期，PWM频率为：72MHz/（BDCMOTOR_TIMx_PRESCALER+1）/（BDCMOTOR_TIM_PERIOD+1）
+#define BDCMOTOR_TIM_PERIOD                  1799  // PWM频率为36MHz/(1799+1)=20KHz
+
+#define BDCMOTOR_DUTY_ZERO                   (0) // 0%占空比
+#define BDCMOTOR_DUTY_FULL                   (BDCMOTOR_TIM_PERIOD-100) // 由于自举电容的存在,无法做到100%占空比
+
+// 定义高级定时器重复计数寄存器值
+// 实际PWM频率为：72MHz/（BDCMOTOR_TIMx_PRESCALER+1）/（BDCMOTOR_TIM_PERIOD+1）/（BDCMOTOR_TIM_REPETITIONCOUNTER+1）
+#define BDCMOTOR_TIM_REPETITIONCOUNTER       0
+#else
 // 定义定时器预分频，定时器实际时钟频率为：8MHz/（BDCMOTOR_TIMx_PRESCALER+1）
 #define BDCMOTOR_TIM_PRESCALER               0    // 实际时钟频率为：8MHz
 
@@ -32,6 +46,7 @@
 // 定义高级定时器重复计数寄存器值
 // 实际PWM频率为：8MHz/（BDCMOTOR_TIMx_PRESCALER+1）/（BDCMOTOR_TIM_PERIOD+1）/（BDCMOTOR_TIM_REPETITIONCOUNTER+1）
 #define BDCMOTOR_TIM_REPETITIONCOUNTER       0
+#endif
 
 #define BDCMOTOR_IDLE     0
 #define BDCMOTOR_RUN      1

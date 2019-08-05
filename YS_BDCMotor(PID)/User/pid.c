@@ -15,6 +15,7 @@ void PID_ParamInit(void)
 #ifdef SPD_CUR_PID
     cPID.LastError = 0;            // Error[-1]
     cPID.PrevError = 0;            // Error[-2]
+    cPID.SumError = 0;
     cPID.Proportion = CUR_P_DATA;  // 比例常数 Proportional Const
     cPID.Integral = CUR_I_DATA;    // 积分常数  Integral Const
     cPID.Derivative = CUR_D_DATA;  // 微分常数 Derivative Const
@@ -46,6 +47,15 @@ int32_t CurPIDCalc(int32_t NextPoint)
         iError = 0;
   
     cPID.SumError += iError; //积分
+//    if( cPID.SumError >= 5200)
+//    {
+//        cPID.SumError = 5200;
+//    }
+//    if( cPID.SumError <= -5200)
+//    {
+//        cPID.SumError = -5200;
+//    }    
+    
     dError = iError - cPID.LastError; //微分
     cPID.LastError = iError;
   
@@ -65,13 +75,14 @@ int32_t SpdPIDCalc(float NextPoint)
 {
     float iError,dError;
     iError = sPID.SetPoint - NextPoint; //偏差
-  
-//  if((iError<0.3f )&& (iError>-0.3f))
-//    iError = 0.0f;
+#ifdef SPD_CUR_PID  
+    if((iError<0.2f )&& (iError>-0.2f))
+        iError = 0.0f;
+#else   
     /* 小于0.5r/m的速度误差是正常的 */
     if((iError<0.5f )&& (iError>-0.5f))
         iError = 0.0f;
-  
+#endif  
     sPID.SumError += iError; //积分
 //  /* 设定积分上限 */
 #ifdef SPD_CUR_PID
@@ -82,6 +93,7 @@ int32_t SpdPIDCalc(float NextPoint)
 #endif  
     dError = iError - sPID.LastError; //微分
     sPID.LastError = iError;
+    
 //  return (int32_t)(sPID.Proportion * iError //比例项
 //  + sPID.Integral * (float)sPID.SumError //积分项
 //  + sPID.Derivative * dError); //微分项

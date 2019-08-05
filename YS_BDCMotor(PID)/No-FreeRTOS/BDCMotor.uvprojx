@@ -336,7 +336,7 @@
             <v6Rtti>0</v6Rtti>
             <VariousControls>
               <MiscControls></MiscControls>
-              <Define>USE_STDPERIPH_DRIVER,STM32F10X_HD</Define>
+              <Define>USE_STDPERIPH_DRIVER,STM32F10X_HD,SYSCLk_72MHz</Define>
               <Undefine></Undefine>
               <IncludePath>..\User;..\..\Device\Core;..\..\Device\Include;..\..\Device\StdPeriph_Driver\inc;..\No-FreeRTOS</IncludePath>
             </VariousControls>
